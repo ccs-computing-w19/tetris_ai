@@ -13,9 +13,8 @@ class Board:
         [(0, 5, 1), (0, 6, 1), (1, 4, 1), (1, 5, 5)],
     ]
 
-    def __init__(self, window):
+    def __init__(self):
         self.grid = [[0 for j in range(10)] for i in range(20)]
-        self.window = window
         self.turns = 0
         self.lost = False
         self.lineClears = 0
@@ -26,21 +25,21 @@ class Board:
     def getBoard(self):
         return copy.deepcopy(self.grid)
         
-    def display(self):
-        self.window.clear()
-        self.window.addstr("\n |--------------------|\n")
+    def display(self, window):
+        window.clear()
+        window.addstr("\n |--------------------|\n")
         for row in self.grid:
-            self.window.addstr(" |")
+            window.addstr(" |")
             for i in row:
                 #self.window.addstr("{} ".format(i))
-                self.window.addstr("{}".format("  " if i == 0 else "[]"))
-            self.window.addstr("|\n")
-        self.window.addstr(" |--------------------|\n")
-        self.window.addstr("\n  " + "".join([("[]" if (-1, i, 1) in self.PIECES[self.next-1] or (-1, i, 5) in self.PIECES[self.next-1] else "  ") for i in range(3, 7)]) + " turns: " + str(self.turns))
-        self.window.addstr("\n  " + "".join([("[]" if (0, i, 1) in self.PIECES[self.next-1] or (0, i, 5) in self.PIECES[self.next-1] else "  ") for i in range(3, 7)]) + " lost: " + str(self.lost))
-        self.window.addstr("\n  " + "".join([("[]" if (1, i, 1) in self.PIECES[self.next-1] or (1, i, 5) in self.PIECES[self.next-1] else "  ") for i in range(3, 7)]) + " clears: " + str(self.lineClears))
-        self.window.addstr("\n  " + "".join([("[]" if (2, i, 1) in self.PIECES[self.next-1] or (2, i, 5) in self.PIECES[self.next-1] else "  ") for i in range(3, 7)]) + " next: " + str(self.next))
-        self.window.addstr("\n")
+                window.addstr("{}".format("  " if i == 0 else "[]"))
+            window.addstr("|\n")
+        window.addstr(" |--------------------|\n")
+        window.addstr("\n  " + "".join([("[]" if (-1, i, 1) in self.PIECES[self.next-1] or (-1, i, 5) in self.PIECES[self.next-1] else "  ") for i in range(3, 7)]) + " turns: " + str(self.turns))
+        window.addstr("\n  " + "".join([("[]" if (0, i, 1) in self.PIECES[self.next-1] or (0, i, 5) in self.PIECES[self.next-1] else "  ") for i in range(3, 7)]) + " lost: " + str(self.lost))
+        window.addstr("\n  " + "".join([("[]" if (1, i, 1) in self.PIECES[self.next-1] or (1, i, 5) in self.PIECES[self.next-1] else "  ") for i in range(3, 7)]) + " clears: " + str(self.lineClears))
+        window.addstr("\n  " + "".join([("[]" if (2, i, 1) in self.PIECES[self.next-1] or (2, i, 5) in self.PIECES[self.next-1] else "  ") for i in range(3, 7)]) + " next: " + str(self.next))
+        window.addstr("\n")
 
     def generateNewPiece(self):
         for loc in self.PIECES[self.next - 1]:
@@ -178,8 +177,8 @@ def main(win):
             pass
 
     # Play screen:
-    board = Board(win)
-    board.display()
+    board = Board()
+    board.display(win)
     counter = int(time.time())
     while 1:
         try:
@@ -188,16 +187,16 @@ def main(win):
                 quit()
             if key == 's' or key == 'KEY_DOWN':
                 board.incrementTime()
-                board.display()
+                board.display(win)
             if key == 'a' or key == 'KEY_LEFT':
                 board.translateActiveLeft()
-                board.display()
+                board.display(win)
             if key == 'd' or key == 'KEY_RIGHT':
                 board.translateActiveRight()
-                board.display()
+                board.display(win)
             if key == 'w' or key == 'KEY_UP':
                 board.rotateActive()
-                board.display()
+                board.display(win)
             if key in ['{}'.format(i) for i in range(8)]:
                 if key == '0':
                     board.autoChoice = True
@@ -205,13 +204,13 @@ def main(win):
                 else:
                     board.autoChoice = False
                     board.next = int(key)
-                board.display()
+                board.display(win)
         except Exception as e:
             # No input
             current = int(time.time())
             if counter < current:
                 board.incrementTime()
-                board.display()
+                board.display(win)
                 counter = current
 
 if __name__ == '__main__':
