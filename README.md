@@ -2,5 +2,8 @@
 AI to play tetris with user-inputted pieces.
 
 The user is given a 4x4 grid to draw their own tetrominoes (tetris pieces), using up to 4 connected blocks.
+This gives the following 9 tetromino possibilities (4 more than normal tetris):
 
-The AI will play games of tetris using the user-inputted pieces
+
+
+The AI will play tetris using the user-inputted pieces.
