@@ -9,8 +9,9 @@ This gives the following 9 enomino possibilities (4 more than normal tetris):
 The AI will play tetris using the user-inputted pieces or the user can play themself.
 
 GAMEPLAY:
-1. user draws their own enominoes on 4x4 grid, which will be the pieces available in the game
+1. user draws their own enominoes on 4x4 grid, which will be the enominoes available in the game
 2. user can choose to either place the game or watch the AI play
+3. if user chooses to play, they mvoe the enominoes using the arrow keys to clear more rows and prevent overflowing to get a higher score
 
 RULES:
 1. enominoes fall from top of screen and land either on the bottom or on top of another enominoes
