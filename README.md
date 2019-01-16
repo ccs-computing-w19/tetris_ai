@@ -2,7 +2,7 @@
 AI to play tetris with user-inputted pieces.
 
 The user is given a 4x4 grid to draw their own enominoes (tetris pieces of n blocks), using up to 4 connected blocks.
-This gives the following 9 enomino possibilities (4 more than normal tetris):
+This gives the following 11 enomino possibilities (4 more than normal tetris):
 [to be added]
 
 
