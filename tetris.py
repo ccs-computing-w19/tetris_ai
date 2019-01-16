@@ -153,15 +153,39 @@ def main(win):
     curses.noecho() #stop keys echoing to screen
     win.nodelay(True)
     
+    # Load screen:
+    try:
+        win.addstr(" ______________________\n")
+        for i in range(10):
+            win.addstr(" \n")
+        win.addstr("         TETRIS        \n")
+        win.addstr("    by Ben and Daniel  \n")
+        win.addstr("      press any key    \n")
+        for i in range(14):
+            win.addstr(" \n")
+        win.addstr(" ______________________\n")
+    except Exception as e:
+        raise Exception('Window too small; (29x24 required)') # Don't! If you catch, likely to hide bugs. 
+    while 1:
+        try:
+            key = win.getkey()
+            if key == os.linesep or key == 'q':
+                quit()
+            else: #if any other key was pressed
+                break
+        except Exception as e:
+            # No input
+            pass
+
+    # Play screen:
     board = Board(win)
     board.display()
-
     counter = int(time.time())
     while 1:
         try:
             key = win.getkey()
             if key == os.linesep or key == 'q':
-                break
+                quit()
             if key == 's' or key == 'KEY_DOWN':
                 board.incrementTime()
                 board.display()
