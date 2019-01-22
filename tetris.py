@@ -1,6 +1,26 @@
 from random import choice, randint
 import time, os, curses, copy
 
+class Tile:
+
+    def __init__(self, state, color, pivot):
+        self.state = state #state of the tile: 0 is inactive, 1 is inactive, 2 is active
+        self.nextState = 0 #hidden value used for updating board
+        self.color = 0 #value from 0 to 5
+        self.pivot = False #pieces should rotate around pivot
+
+    def copy(self, tile):
+        self.state = tile.state
+        self.nextState = tile.nextState
+        self.color = tile.color
+        self.pivot = tile.pivot
+    
+    def reset(self, tile):
+        self.state = 0
+        self.nextState = 0
+        self.color = 0
+        self.pivot = False
+
 class Board:
 
     PIECES = [
