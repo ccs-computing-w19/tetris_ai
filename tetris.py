@@ -20,6 +20,7 @@ class Board:
         self.lineClears = 0
         self.next = randint(1, 7)
         self.autoChoice = True
+        self.rotatable = False #flag that stores if rotate button does anything
         self.generateNewPiece()
 
     def getBoard(self):
@@ -47,7 +48,32 @@ class Board:
         if self.autoChoice:
             self.next = randint(1, 7)
 
-    def rotateActive(self):
+    def rotateActiveClockwise(self):
+        pivot = (-1, -1)
+        for i in range(len(self.grid)):
+            for j in range(len(self.grid[i])):
+                if self.grid[i][j] == 5:
+                    pivot = (i, j) #break
+        if pivot[0] != -1:
+            error = False
+            for i in range(len(self.grid)):
+                for j in range(len(self.grid[i])):
+                    if self.grid[i][j] == 1 or self.grid[i][j] == 4:
+                        if pivot[0] + j - pivot[1] > 19 or pivot[1] + pivot[0] - i > 9 or pivot[0] + j - pivot[1] < 0 or pivot[1] + pivot[0] - i < 0 or self.grid[pivot[0] + j - pivot[1]][pivot[1] + pivot[0] - i] == 2:
+                            error = True #break
+            if not error:
+                for i in range(len(self.grid)):
+                    for j in range(len(self.grid[i])):
+                        if self.grid[i][j] == 1 or self.grid[i][j] == 4:
+                            self.grid[pivot[0] + j - pivot[1]][pivot[1] + pivot[0] - i] += 3
+                            self.grid[i][j] -= 1
+                for i in range(len(self.grid)):
+                    for j in range(len(self.grid[i])):
+                        if self.grid[i][j] == 3 or self.grid[i][j] == 4:
+                            self.grid[i][j] -= 2
+    
+    # MAKE THIS FUNCTION WORK
+    def rotateActiveCounter(self):
         pivot = (-1, -1)
         for i in range(len(self.grid)):
             for j in range(len(self.grid[i])):
@@ -117,6 +143,7 @@ class Board:
                         self.grid[i][j] = 2
             self.lineClear()
             if 2 in self.grid[0]: self.lost = True
+            self.generateNewPiece()
         else:
             for i in range(len(self.grid)-1, -1, -1):
                 for j in range(len(self.grid[i])):
@@ -195,7 +222,7 @@ def main(win):
                 board.translateActiveRight()
                 board.display(win)
             if key == 'w' or key == 'KEY_UP':
-                board.rotateActive()
+                board.rotateActiveClockwise()
                 board.display(win)
             if key in ['{}'.format(i) for i in range(8)]:
                 if key == '0':
