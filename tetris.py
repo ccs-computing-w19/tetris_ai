@@ -108,13 +108,17 @@ class Board:
                     if self.grid[i][j].isActive():
                         if pivot[0] + j - pivot[1] > 19 or pivot[1] + pivot[0] - i > 9 or pivot[0] + j - pivot[1] < 0 or pivot[1] + pivot[0] - i < 0 or self.grid[pivot[0] + j - pivot[1]][pivot[1] + pivot[0] - i].isInactive():
                             error = True #break
-            print error
             if not error:
-                for i in range(len(self.grid)):
-                    for j in range(len(self.grid[i])):
-                        if self.grid[i][j].isActive():
-                            self.grid[pivot[0] + j - pivot[1]][pivot[1] + pivot[0] - i].copy(self.grid[i][j])
-                            if not self.grid[i][j].updated(): self.grid[i][j].reset()
+                print("hello")
+                try:
+                    for i in range(len(self.grid)):
+                        for j in range(len(self.grid[i])):
+                            if self.grid[i][j].isActive():
+                                self.grid[pivot[0] + j - pivot[1]][pivot[1] + pivot[0] - i].copy(self.grid[i][j])
+                                if not self.grid[i][j].updated(): self.grid[i][j].reset()
+                except:
+                    print("Oh noesies!")
+                print("hi")
                 self.updateBoard()
     
 
