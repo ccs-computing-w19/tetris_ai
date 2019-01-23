@@ -49,12 +49,16 @@ class Board:
 
     def __init__(self):
         self.grid = [[Tile() for j in range(10)] for i in range(20)]
-        self.turns = 0
-        self.lost = False
-        self.lineClears = 0
+        
         self.next = randint(1, len(self.PIECES))
         self.autoChoice = True
         self.pivot = (-1, -1) #flag that stores the pivot
+
+        self.lost = False
+        self.numTurns = 0
+        self.numLines = 0
+        self.numPieces = 0
+
         self.generateNewPiece()
 
     def getBoard(self):
@@ -78,13 +82,16 @@ class Board:
         [(0, 5, False), (0, 6, False), (1, 4, False), (1, 5, True)],
     ]
 
+    # Creates a new piece at the top of the board
     def generateNewPiece(self):
         for loc in self.PIECES[self.next - 1]:
             self.grid[loc[0]][loc[1]] = Tile(state=2, pivot=loc[2])
             if loc[2]: self.pivot = (loc[0], loc[1])
         if self.autoChoice:
             self.next = randint(1, len(self.PIECES))
+        self.numPieces += 1
 
+    # Rotates the active block clockwise
     def rotateActiveClockwise(self):
         if self.rotatable(): #if there is a pivot
             error = False
@@ -103,7 +110,12 @@ class Board:
                             self.grid[self.pivot[0] + j - self.pivot[1]][self.pivot[1] + self.pivot[0] - i].copy(self.grid[i][j])
                             if not self.grid[i][j].updated: self.grid[i][j].reset()
                 self.updateBoard()
-
+    
+    # Rotates the active block clockwise
+    def rotateActiveCounterclockwise(self):
+        pass
+    
+    # Moves the active block left
     def translateActiveLeft(self):
         onLeft = False
         for i in range(len(self.grid)):
@@ -122,6 +134,7 @@ class Board:
             if self.rotatable(): self.pivot = (self.pivot[0], self.pivot[1] - 1) #update pivot flag
             self.updateBoard()
 
+    # Moves the active block right
     def translateActiveRight(self):
         onRight = False
         for i in range(len(self.grid)):
@@ -140,6 +153,7 @@ class Board:
             if self.rotatable(): self.pivot = (self.pivot[0], self.pivot[1] + 1) #update pivot flag
             self.updateBoard()
 
+    # Shifts blocks down and generates new block if necessary
     def incrementTime(self):
         onBottom = False
         for i in range(len(self.grid)):
@@ -161,7 +175,7 @@ class Board:
                         self.grid[i+1][j].copy(self.grid[i][j])
                         if not self.grid[i][j].updated: self.grid[i][j].reset()
             if self.rotatable(): self.pivot = (self.pivot[0] + 1, self.pivot[1]) #update pivot flag
-        self.turns += 1
+        self.numTurns += 1
         self.updateBoard()
         if onBottom:
             for i in range(len(self.grid[0])):
@@ -170,16 +184,23 @@ class Board:
             self.lineClear()
             self.generateNewPiece()
     
+    # Drops the active piece to the bottom
+    def hardDrop(self):
+        currentPieces = self.numPieces
+        while currentPieces == self.numPieces:
+            self.incrementTime()
+
+    # Clears any lines that are full
     def lineClear(self):
         for i in range(len(self.grid)):
             rowIsFull = True
             for j in range(len(self.grid[i])):
-                if not self.grid[i][j].isInactive(): rowIsFull = False #break
+                if not self.grid[i][j].isInactive(): rowIsFull = False; break
             if rowIsFull:
                 for r in range(i, 0, -1):
                     self.grid[r] = self.grid[r-1]
                 self.grid[0] = [Tile() for j in range(10)]
-                self.lineClears += 1
+                self.numLines += 1
 
     def display(self, window):
         window.clear()
@@ -190,9 +211,9 @@ class Board:
                 window.addstr("[]" if tile.state else "  ")
             window.addstr("|\n")
         window.addstr(" |--------------------|\n")
-        window.addstr("\n  " + "".join([("[]" if (-1, i, False) in self.PIECES[self.next-1] or (-1, i, True) in self.PIECES[self.next-1] else "  ") for i in range(3, 7)]) + " turns: " + str(self.turns))
+        window.addstr("\n  " + "".join([("[]" if (-1, i, False) in self.PIECES[self.next-1] or (-1, i, True) in self.PIECES[self.next-1] else "  ") for i in range(3, 7)]) + " turns: " + str(self.numTurns))
         window.addstr("\n  " + "".join([("[]" if (0, i, False) in self.PIECES[self.next-1] or (0, i, True) in self.PIECES[self.next-1] else "  ") for i in range(3, 7)]) + " lost: " + str(self.lost))
-        window.addstr("\n  " + "".join([("[]" if (1, i, False) in self.PIECES[self.next-1] or (1, i, True) in self.PIECES[self.next-1] else "  ") for i in range(3, 7)]) + " clears: " + str(self.lineClears))
+        window.addstr("\n  " + "".join([("[]" if (1, i, False) in self.PIECES[self.next-1] or (1, i, True) in self.PIECES[self.next-1] else "  ") for i in range(3, 7)]) + " clears: " + str(self.numLines))
         window.addstr("\n  " + "".join([("[]" if (2, i, False) in self.PIECES[self.next-1] or (2, i, True) in self.PIECES[self.next-1] else "  ") for i in range(3, 7)]) + " next: " + str(self.next))
         window.addstr("{}".format(self.pivot))
         window.addstr("\n")
@@ -238,16 +259,14 @@ def main(win):
                 quit()
             if key == 's' or key == 'KEY_DOWN':
                 board.incrementTime()
-                board.display(win)
             if key == 'a' or key == 'KEY_LEFT':
                 board.translateActiveLeft()
-                board.display(win)
             if key == 'd' or key == 'KEY_RIGHT':
                 board.translateActiveRight()
-                board.display(win)
             if key == 'w' or key == 'KEY_UP':
                 board.rotateActiveClockwise()
-                board.display(win)
+            if key == ' ':
+                board.hardDrop()
             if key in ['{}'.format(i) for i in range(8)]:
                 if key == '0':
                     board.autoChoice = True
@@ -255,7 +274,7 @@ def main(win):
                 else:
                     board.autoChoice = False
                     board.next = int(key)
-                board.display(win)
+            board.display(win)
         except Exception as e:
             # No input
             current = int(time.time())
