@@ -11,7 +11,9 @@ The AI will play tetris using the user-inputted pieces or the user can play them
 GAMEPLAY:
 1. user draws their own enominoes on 4x4 grid, which will be the enominoes available in the game
 2. user can choose to either place the game or watch the AI play
-3. if user chooses to play, they mvoe the enominoes using the arrow keys to clear more rows and prevent overflowing to get a higher score
+3. if user chooses to play, they move the enominoes using the arrow keys to clear more rows and prevent overflowing to get a higher score
+4. combos and multiple row clears give more points
+5. user presses q to quit
 
 RULES:
 1. enominoes fall from top of screen and land either on the bottom or on top of another enominoes
