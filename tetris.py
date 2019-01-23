@@ -3,23 +3,42 @@ import time, os, curses, copy
 
 class Tile:
 
-    def __init__(self, state, color, pivot):
+    def __init__(self, state=0, color=0, pivot=False):
         self.state = state #state of the tile: 0 is inactive, 1 is inactive, 2 is active
-        self.nextState = 0 #hidden value used for updating board
         self.color = 0 #value from 0 to 5
         self.pivot = False #pieces should rotate around pivot
+        self.updated = False
+        self.resetNext()
 
     def copy(self, tile):
-        self.state = tile.state
-        self.nextState = tile.nextState
-        self.color = tile.color
-        self.pivot = tile.pivot
+        self.nextState = tile.state
+        self.nextColor = tile.color
+        self.nextPivot = tile.pivot
+        self.updated = True
     
-    def reset(self, tile):
+    def update(self):
+        self.state = self.nextState
+        self.color = self.nextColor
+        self.pivot = self.nextPivot
+        self.resetNext()
+
+    def reset(self):
         self.state = 0
-        self.nextState = 0
         self.color = 0
         self.pivot = False
+        self.resetNext()
+    
+    def resetNext(self):
+        self.nextState = self.state
+        self.nextColor = self.color
+        self.nextPivot = self.pivot
+        self.updated = False
+    
+    def isActive(self):
+        return self.state == 2
+
+    def isEmpty(self):
+        return self.state == 0
 
 class Board:
 
@@ -34,7 +53,7 @@ class Board:
     ]
 
     def __init__(self):
-        self.grid = [[0 for j in range(10)] for i in range(20)]
+        self.grid = [[Tile() for j in range(10)] for i in range(20)]
         self.turns = 0
         self.lost = False
         self.lineClears = 0
@@ -51,9 +70,9 @@ class Board:
         window.addstr("\n |--------------------|\n")
         for row in self.grid:
             window.addstr(" |")
-            for i in row:
+            for tile in row:
                 #self.window.addstr("{} ".format(i))
-                window.addstr("{}".format("  " if i == 0 else "[]"))
+                window.addstr("{}".format("  " if tile.state == 0 else "[]"))
             window.addstr("|\n")
         window.addstr(" |--------------------|\n")
         window.addstr("\n  " + "".join([("[]" if (-1, i, 1) in self.PIECES[self.next-1] or (-1, i, 5) in self.PIECES[self.next-1] else "  ") for i in range(3, 7)]) + " turns: " + str(self.turns))
@@ -64,7 +83,7 @@ class Board:
 
     def generateNewPiece(self):
         for loc in self.PIECES[self.next - 1]:
-            self.grid[loc[0]][loc[1]] = loc[2]
+            self.grid[loc[0]][loc[1]].state = loc[2]
         if self.autoChoice:
             self.next = randint(1, 7)
 
@@ -150,27 +169,27 @@ class Board:
         noneActive = True
         for i in range(len(self.grid)):
             for j in range(len(self.grid[i])):
-                if self.grid[i][j] == 1 or self.grid[i][j] == 5:
+                if self.grid[i][j].state == 2:
                     noneActive = False
-                    if i == 19 or self.grid[i+1][j] == 2:
+                    if i == 19 or self.grid[i+1][j].state == 1:
                         onBottom = True
         if noneActive:
             self.generateNewPiece()
         elif onBottom:
             for i in range(len(self.grid)):
                 for j in range(len(self.grid[i])):
-                    if self.grid[i][j] == 1 or self.grid[i][j] == 5:
-                        self.grid[i][j] = 2
-            self.lineClear()
-            if 2 in self.grid[0]: self.lost = True
+                    if self.grid[i][j].state == 2:
+                        self.grid[i][j].nextState = 1
+            #self.lineClear()
+            #if 2 in self.grid[0]: self.lost = True
             self.generateNewPiece()
         else:
-            for i in range(len(self.grid)-1, -1, -1):
+            for i in range(len(self.grid)):
                 for j in range(len(self.grid[i])):
-                    if self.grid[i][j] == 1 or self.grid[i][j] == 5:
-                        self.grid[i+1][j] = self.grid[i][j]
-                        self.grid[i][j] = 0
+                    if self.grid[i][j].isActive:
+                        self.grid[i+1][j].copy(self.grid[i][j])
         self.turns += 1
+        self.updateBoard()
 
     def lineClear(self):
         for i in range(len(self.grid)):
@@ -180,20 +199,10 @@ class Board:
                 self.grid[0] = [0 for j in range(10)]
                 self.lineClears += 1
 
-class AI():
-
-    def __init__(self):
-        pass
-    
-    def move(self, state):
-        choice = randint(1, 3)
-        if choice == 1:
-            state.translateActiveLeft()
-        elif choice == 2:
-            state.translateActiveRight()
-        else:
-            state.rotateActive()
-
+    def updateBoard(self):
+        for i in range(len(self.grid)):
+            for j in range(len(self.grid[i])):
+                self.grid[i][j].update()
 
 def main(win):
     curses.noecho() #stop keys echoing to screen
@@ -256,7 +265,7 @@ def main(win):
             # No input
             current = int(time.time())
             if counter < current:
-                board.incrementTime()
+                #board.incrementTime()
                 board.display(win)
                 counter = current
 
