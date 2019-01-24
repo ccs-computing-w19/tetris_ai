@@ -1,5 +1,4 @@
 from random import choice, randint
-import time, os, curses, copy
 
 class Tile:
 
@@ -45,10 +44,10 @@ class Tile:
     def isEmpty(self):
         return self.state == 0
 
-class Board:
+class Tetris:
 
-    def __init__(self):
-        self.grid = [[Tile() for j in range(10)] for i in range(20)]
+    def __init__(self, numRows=20, numColumns=10):
+        self.grid = [[Tile() for j in range(numColumns)] for i in range(numRows)]
         
         self.next = randint(1, len(self.PIECES))
         self.autoChoice = True
@@ -60,10 +59,7 @@ class Board:
         self.numPieces = 0
 
         self.generateNewPiece()
-
-    def getBoard(self):
-        return copy.deepcopy(self.grid)
-        
+    
     def rotatable(self):
         return self.pivot != (-1, -1)
 
@@ -98,7 +94,7 @@ class Board:
             for i in range(len(self.grid)):
                 for j in range(len(self.grid[i])):
                     if self.grid[i][j].isActive():
-                        if self.pivot[0] + j - self.pivot[1] > 19 or self.pivot[1] + self.pivot[0] - i > 9 or self.pivot[0] + j - self.pivot[1] < 0 or self.pivot[1] + self.pivot[0] - i < 0 or self.grid[self.pivot[0] + j - self.pivot[1]][self.pivot[1] + self.pivot[0] - i].isInactive():
+                        if self.pivot[0] + j - self.pivot[1] > len(self.grid) - 1 or self.pivot[1] + self.pivot[0] - i > len(self.grid[0]) - 1 or self.pivot[0] + j - self.pivot[1] < 0 or self.pivot[1] + self.pivot[0] - i < 0 or self.grid[self.pivot[0] + j - self.pivot[1]][self.pivot[1] + self.pivot[0] - i].isInactive():
                             error = True; break
                 else:
                     continue
@@ -140,7 +136,7 @@ class Board:
         for i in range(len(self.grid)):
             for j in range(len(self.grid[i])):
                 if self.grid[i][j].isActive():
-                    if j == 9 or self.grid[i][j+1].isInactive(): onRight = True; break
+                    if j == len(self.grid[0]) - 1 or self.grid[i][j+1].isInactive(): onRight = True; break
             else:
                 continue
             break
@@ -159,7 +155,7 @@ class Board:
         for i in range(len(self.grid)):
             for j in range(len(self.grid[i])):
                 if self.grid[i][j].isActive():
-                    if i == 19 or self.grid[i+1][j].isInactive(): onBottom = True; break
+                    if i == len(self.grid) - 1 or self.grid[i+1][j].isInactive(): onBottom = True; break
             else:
                 continue
             break
@@ -199,89 +195,6 @@ class Board:
             if rowIsFull:
                 for r in range(i, 0, -1):
                     self.grid[r] = self.grid[r-1]
-                self.grid[0] = [Tile() for j in range(10)]
+                self.grid[0] = [Tile() for j in range(len(self.grid[0]))]
                 self.numLines += 1
 
-    def display(self, window):
-        window.clear()
-        window.addstr("\n |--------------------|\n")
-        for row in self.grid:
-            window.addstr(" |")
-            for tile in row:
-                window.addstr("[]" if tile.state else "  ")
-            window.addstr("|\n")
-        window.addstr(" |--------------------|\n")
-        window.addstr("\n  " + "".join([("[]" if (-1, i, False) in self.PIECES[self.next-1] or (-1, i, True) in self.PIECES[self.next-1] else "  ") for i in range(3, 7)]) + " turns: " + str(self.numTurns))
-        window.addstr("\n  " + "".join([("[]" if (0, i, False) in self.PIECES[self.next-1] or (0, i, True) in self.PIECES[self.next-1] else "  ") for i in range(3, 7)]) + " lost: " + str(self.lost))
-        window.addstr("\n  " + "".join([("[]" if (1, i, False) in self.PIECES[self.next-1] or (1, i, True) in self.PIECES[self.next-1] else "  ") for i in range(3, 7)]) + " clears: " + str(self.numLines))
-        window.addstr("\n  " + "".join([("[]" if (2, i, False) in self.PIECES[self.next-1] or (2, i, True) in self.PIECES[self.next-1] else "  ") for i in range(3, 7)]) + " next: " + str(self.next))
-        window.addstr("{}".format(self.pivot))
-        window.addstr("\n")
-
-
-
-def main(win):
-    curses.noecho() #stop keys echoing to screen
-    win.nodelay(True)
-    
-    # Load screen:
-    try:
-        win.addstr(" ______________________\n")
-        for i in range(10):
-            win.addstr(" \n")
-        win.addstr("         TETRIS        \n")
-        win.addstr("    by Ben and Daniel  \n")
-        win.addstr("      press any key    \n")
-        for i in range(14):
-            win.addstr(" \n")
-        win.addstr(" ______________________\n")
-    except Exception as e:
-        raise Exception('Window too small; (29x24 required)') # Don't! If you catch, likely to hide bugs. 
-    while 1:
-        try:
-            key = win.getkey()
-            if key == os.linesep or key == 'q':
-                quit()
-            else: #if any other key was pressed
-                break
-        except Exception as e:
-            # No input
-            pass
-
-    # Play screen:
-    board = Board()
-    board.display(win)
-    counter = int(time.time())
-    while 1:
-        try:
-            key = win.getkey()
-            if key == 'q':
-                quit()
-            if key == 's' or key == 'KEY_DOWN':
-                board.incrementTime()
-            if key == 'a' or key == 'KEY_LEFT':
-                board.translateActiveLeft()
-            if key == 'd' or key == 'KEY_RIGHT':
-                board.translateActiveRight()
-            if key == 'w' or key == 'KEY_UP':
-                board.rotateActiveClockwise()
-            if key == ' ':
-                board.hardDrop()
-            if key in ['{}'.format(i) for i in range(8)]:
-                if key == '0':
-                    board.autoChoice = True
-                    board.next = randint(1, 7)
-                else:
-                    board.autoChoice = False
-                    board.next = int(key)
-            board.display(win)
-        except Exception as e:
-            # No input
-            current = int(time.time())
-            if counter < current:
-                board.incrementTime()
-                board.display(win)
-                counter = current
-
-if __name__ == '__main__':
-    curses.wrapper(main)
