@@ -3,8 +3,6 @@ from random import randint
 
 from tetris import Tetris
 
-
-
 def display(game, window):
     window.clear()
     window.addstr("\n |" + ("--" * len(game.grid[0])) + "|\n")
