@@ -1,217 +1,200 @@
 from random import choice, randint
-import time, os, curses, copy
 
-class Board:
+class Tile:
 
-    PIECES = [
-        [(0, 3, 1), (0, 4, 5), (0, 5, 1), (0, 6, 1)],
-        [(0, 3, 1), (0, 4, 5), (0, 5, 1), (1, 4, 1)],
-        [(0, 4, 1), (0, 5, 5), (0, 6, 1), (1, 4, 1)],
-        [(0, 3, 1), (0, 4, 5), (0, 5, 1), (1, 5, 1)],
-        [(0, 4, 1), (0, 5, 1), (1, 4, 1), (1, 5, 1)],
-        [(0, 3, 1), (0, 4, 1), (1, 4, 5), (1, 5, 1)],
-        [(0, 5, 1), (0, 6, 1), (1, 4, 1), (1, 5, 5)],
-    ]
+    def __init__(self, state=0, color=0, pivot=False):
+        self.state = state #state of the tile: 0 is inactive, 1 is inactive, 2 is active
+        self.color = color #value from 0 to 5
+        self.pivot = pivot #pieces should rotate around pivot
+        self.nextState = self.state
+        self.nextColor = self.color
+        self.nextPivot = self.pivot
+        self.updated = False
 
-    def __init__(self):
-        self.grid = [[0 for j in range(10)] for i in range(20)]
-        self.turns = 0
-        self.lost = False
-        self.lineClears = 0
-        self.next = randint(1, 7)
-        self.autoChoice = True
-        self.generateNewPiece()
+    def copy(self, tile):
+        self.nextState = tile.state
+        self.nextColor = tile.color
+        self.nextPivot = tile.pivot
+        self.updated = True
+    
+    def update(self):
+        self.state = self.nextState
+        self.color = self.nextColor
+        self.pivot = self.nextPivot
+        self.updated = False
 
-    def getBoard(self):
-        return copy.deepcopy(self.grid)
+    def reset(self):
+        self.nextState = 0
+        self.nextColor = 0
+        self.nextPivot = False
+        self.updated = True
+    
+    def deactivate(self):
+        if self.isActive:
+            self.nextState = 1
+            self.nextPivot = False
+        self.updated = True
+    
+    def isActive(self):
+        return self.state == 2
+
+    def isInactive(self):
+        return self.state == 1
+
+    def isEmpty(self):
+        return self.state == 0
+
+class Tetris:
+
+    def __init__(self, numRows=20, numColumns=10):
+        self.grid = [[Tile() for j in range(numColumns)] for i in range(numRows)]
         
-    def display(self, window):
-        window.clear()
-        window.addstr("\n |--------------------|\n")
-        for row in self.grid:
-            window.addstr(" |")
-            for i in row:
-                #self.window.addstr("{} ".format(i))
-                window.addstr("{}".format("  " if i == 0 else "[]"))
-            window.addstr("|\n")
-        window.addstr(" |--------------------|\n")
-        window.addstr("\n  " + "".join([("[]" if (-1, i, 1) in self.PIECES[self.next-1] or (-1, i, 5) in self.PIECES[self.next-1] else "  ") for i in range(3, 7)]) + " turns: " + str(self.turns))
-        window.addstr("\n  " + "".join([("[]" if (0, i, 1) in self.PIECES[self.next-1] or (0, i, 5) in self.PIECES[self.next-1] else "  ") for i in range(3, 7)]) + " lost: " + str(self.lost))
-        window.addstr("\n  " + "".join([("[]" if (1, i, 1) in self.PIECES[self.next-1] or (1, i, 5) in self.PIECES[self.next-1] else "  ") for i in range(3, 7)]) + " clears: " + str(self.lineClears))
-        window.addstr("\n  " + "".join([("[]" if (2, i, 1) in self.PIECES[self.next-1] or (2, i, 5) in self.PIECES[self.next-1] else "  ") for i in range(3, 7)]) + " next: " + str(self.next))
-        window.addstr("\n")
+        self.next = randint(1, len(self.PIECES))
+        self.autoChoice = True
+        self.pivot = (-1, -1) #flag that stores the pivot
 
-    def generateNewPiece(self):
-        for loc in self.PIECES[self.next - 1]:
-            self.grid[loc[0]][loc[1]] = loc[2]
-        if self.autoChoice:
-            self.next = randint(1, 7)
+        self.lost = False
+        self.numTurns = 0
+        self.numLines = 0
+        self.numPieces = 0
 
-    def rotateActive(self):
-        pivot = (-1, -1)
+        self.generateNewPiece()
+    
+    def rotatable(self):
+        return self.pivot != (-1, -1)
+
+    def updateBoard(self):
         for i in range(len(self.grid)):
             for j in range(len(self.grid[i])):
-                if self.grid[i][j] == 5:
-                    pivot = (i, j) #break
-        if pivot[0] != -1:
+                if self.grid[i][j].updated: self.grid[i][j].update()
+    
+    PIECES = [
+        [(0, 3, False), (0, 4, True), (0, 5, False), (0, 6, False)],
+        [(0, 3, False), (0, 4, True), (0, 5, False), (1, 4, False)],
+        [(0, 4, False), (0, 5, True), (0, 6, False), (1, 4, False)],
+        [(0, 3, False), (0, 4, True), (0, 5, False), (1, 5, False)],
+        [(0, 4, False), (0, 5, False), (1, 4, False), (1, 5, False)],
+        [(0, 3, False), (0, 4, False), (1, 4, True), (1, 5, False)],
+        [(0, 5, False), (0, 6, False), (1, 4, False), (1, 5, True)],
+    ]
+
+    # Creates a new piece at the top of the board
+    def generateNewPiece(self):
+        for loc in self.PIECES[self.next - 1]:
+            self.grid[loc[0]][loc[1]] = Tile(state=2, pivot=loc[2])
+            if loc[2]: self.pivot = (loc[0], loc[1])
+        if self.autoChoice:
+            self.next = randint(1, len(self.PIECES))
+        self.numPieces += 1
+
+    # Rotates the active block clockwise
+    def rotateActiveClockwise(self):
+        if self.rotatable(): #if there is a pivot
             error = False
             for i in range(len(self.grid)):
                 for j in range(len(self.grid[i])):
-                    if self.grid[i][j] == 1 or self.grid[i][j] == 4:
-                        if pivot[0] + j - pivot[1] > 19 or pivot[1] + pivot[0] - i > 9 or pivot[0] + j - pivot[1] < 0 or pivot[1] + pivot[0] - i < 0 or self.grid[pivot[0] + j - pivot[1]][pivot[1] + pivot[0] - i] == 2:
-                            error = True #break
+                    if self.grid[i][j].isActive():
+                        if self.pivot[0] + j - self.pivot[1] > len(self.grid) - 1 or self.pivot[1] + self.pivot[0] - i > len(self.grid[0]) - 1 or self.pivot[0] + j - self.pivot[1] < 0 or self.pivot[1] + self.pivot[0] - i < 0 or self.grid[self.pivot[0] + j - self.pivot[1]][self.pivot[1] + self.pivot[0] - i].isInactive():
+                            error = True; break
+                else:
+                    continue
+                break
             if not error:
                 for i in range(len(self.grid)):
                     for j in range(len(self.grid[i])):
-                        if self.grid[i][j] == 1 or self.grid[i][j] == 4:
-                            self.grid[pivot[0] + j - pivot[1]][pivot[1] + pivot[0] - i] += 3
-                            self.grid[i][j] -= 1
-                for i in range(len(self.grid)):
-                    for j in range(len(self.grid[i])):
-                        if self.grid[i][j] == 3 or self.grid[i][j] == 4:
-                            self.grid[i][j] -= 2
-
+                        if self.grid[i][j].isActive():
+                            self.grid[self.pivot[0] + j - self.pivot[1]][self.pivot[1] + self.pivot[0] - i].copy(self.grid[i][j])
+                            if not self.grid[i][j].updated: self.grid[i][j].reset()
+                self.updateBoard()
+    
+    # Rotates the active block clockwise
+    def rotateActiveCounterclockwise(self):
+        pass
+    
+    # Moves the active block left
     def translateActiveLeft(self):
         onLeft = False
         for i in range(len(self.grid)):
             for j in range(len(self.grid[i])):
-                if self.grid[i][j] == 1 or self.grid[i][j] == 5:
-                    if j == 0 or self.grid[i][j-1] == 2:
-                        onLeft = True #break
+                if self.grid[i][j].isActive():
+                    if j == 0 or self.grid[i][j-1].isInactive(): onLeft = True; break
+            else:
+                continue
+            break
         if not onLeft:
             for i in range(len(self.grid)):
                 for j in range(len(self.grid[i])):
-                    if self.grid[i][j] == 1 or self.grid[i][j] == 5:
-                        self.grid[i][j-1] = self.grid[i][j]
-                        self.grid[i][j] = 0
+                    if self.grid[i][j].isActive():
+                        self.grid[i][j-1].copy(self.grid[i][j])
+                        if not self.grid[i][j].updated: self.grid[i][j].reset()
+            if self.rotatable(): self.pivot = (self.pivot[0], self.pivot[1] - 1) #update pivot flag
+            self.updateBoard()
 
+    # Moves the active block right
     def translateActiveRight(self):
         onRight = False
         for i in range(len(self.grid)):
             for j in range(len(self.grid[i])):
-                if self.grid[i][j] == 1 or self.grid[i][j] == 5:
-                    if j == 9 or self.grid[i][j+1] == 2:
-                        onRight = True #break
+                if self.grid[i][j].isActive():
+                    if j == len(self.grid[0]) - 1 or self.grid[i][j+1].isInactive(): onRight = True; break
+            else:
+                continue
+            break
         if not onRight:
             for i in range(len(self.grid)):
-                for j in range(len(self.grid[i])-1, -1, -1):
-                    if self.grid[i][j] == 1 or self.grid[i][j] == 5:
-                        self.grid[i][j+1] = self.grid[i][j]
-                        self.grid[i][j] = 0
+                for j in range(len(self.grid[i])):
+                    if self.grid[i][j].isActive():
+                        self.grid[i][j+1].copy(self.grid[i][j])
+                        if not self.grid[i][j].updated: self.grid[i][j].reset()
+            if self.rotatable(): self.pivot = (self.pivot[0], self.pivot[1] + 1) #update pivot flag
+            self.updateBoard()
 
+    # Shifts blocks down and generates new block if necessary
     def incrementTime(self):
         onBottom = False
-        noneActive = True
         for i in range(len(self.grid)):
             for j in range(len(self.grid[i])):
-                if self.grid[i][j] == 1 or self.grid[i][j] == 5:
-                    noneActive = False
-                    if i == 19 or self.grid[i+1][j] == 2:
-                        onBottom = True
-        if noneActive:
-            self.generateNewPiece()
-        elif onBottom:
+                if self.grid[i][j].isActive():
+                    if i == len(self.grid) - 1 or self.grid[i+1][j].isInactive(): onBottom = True; break
+            else:
+                continue
+            break
+        if onBottom:
             for i in range(len(self.grid)):
                 for j in range(len(self.grid[i])):
-                    if self.grid[i][j] == 1 or self.grid[i][j] == 5:
-                        self.grid[i][j] = 2
-            self.lineClear()
-            if 2 in self.grid[0]: self.lost = True
+                    if self.grid[i][j].isActive():
+                        self.grid[i][j].deactivate()
         else:
-            for i in range(len(self.grid)-1, -1, -1):
+            for i in range(len(self.grid)):
                 for j in range(len(self.grid[i])):
-                    if self.grid[i][j] == 1 or self.grid[i][j] == 5:
-                        self.grid[i+1][j] = self.grid[i][j]
-                        self.grid[i][j] = 0
-        self.turns += 1
+                    if self.grid[i][j].isActive():
+                        self.grid[i+1][j].copy(self.grid[i][j])
+                        if not self.grid[i][j].updated: self.grid[i][j].reset()
+            if self.rotatable(): self.pivot = (self.pivot[0] + 1, self.pivot[1]) #update pivot flag
+        self.numTurns += 1
+        self.updateBoard()
+        if onBottom:
+            for i in range(len(self.grid[0])):
+                if self.grid[0][i].isInactive(): self.lost = True; break
+            self.pivot = (-1, -1)
+            self.lineClear()
+            self.generateNewPiece()
+    
+    # Drops the active piece to the bottom
+    def hardDrop(self):
+        currentPieces = self.numPieces
+        while currentPieces == self.numPieces:
+            self.incrementTime()
 
+    # Clears any lines that are full
     def lineClear(self):
         for i in range(len(self.grid)):
-            if not (0 in self.grid[i]):
-                for j in range(i, 0, -1):
-                    self.grid[j] = self.grid[j-1]
-                self.grid[0] = [0 for j in range(10)]
-                self.lineClears += 1
+            rowIsFull = True
+            for j in range(len(self.grid[i])):
+                if not self.grid[i][j].isInactive(): rowIsFull = False; break
+            if rowIsFull:
+                for r in range(i, 0, -1):
+                    self.grid[r] = self.grid[r-1]
+                self.grid[0] = [Tile() for j in range(len(self.grid[0]))]
+                self.numLines += 1
 
-class AI():
-
-    def __init__(self):
-        pass
-    
-    def move(self, state):
-        choice = randint(1, 3)
-        if choice == 1:
-            state.translateActiveLeft()
-        elif choice == 2:
-            state.translateActiveRight()
-        else:
-            state.rotateActive()
-
-
-def main(win):
-    curses.noecho() #stop keys echoing to screen
-    win.nodelay(True)
-    
-    # Load screen:
-    try:
-        win.addstr(" ______________________\n")
-        for i in range(10):
-            win.addstr(" \n")
-        win.addstr("         TETRIS        \n")
-        win.addstr("    by Ben and Daniel  \n")
-        win.addstr("      press any key    \n")
-        for i in range(14):
-            win.addstr(" \n")
-        win.addstr(" ______________________\n")
-    except Exception as e:
-        raise Exception('Window too small; (29x24 required)') # Don't! If you catch, likely to hide bugs. 
-    while 1:
-        try:
-            key = win.getkey()
-            if key == os.linesep or key == 'q':
-                quit()
-            else: #if any other key was pressed
-                break
-        except Exception as e:
-            # No input
-            pass
-
-    # Play screen:
-    board = Board()
-    board.display(win)
-    counter = int(time.time())
-    while 1:
-        try:
-            key = win.getkey()
-            if key == os.linesep or key == 'q':
-                quit()
-            if key == 's' or key == 'KEY_DOWN':
-                board.incrementTime()
-                board.display(win)
-            if key == 'a' or key == 'KEY_LEFT':
-                board.translateActiveLeft()
-                board.display(win)
-            if key == 'd' or key == 'KEY_RIGHT':
-                board.translateActiveRight()
-                board.display(win)
-            if key == 'w' or key == 'KEY_UP':
-                board.rotateActive()
-                board.display(win)
-            if key in ['{}'.format(i) for i in range(8)]:
-                if key == '0':
-                    board.autoChoice = True
-                    board.next = randint(1, 7)
-                else:
-                    board.autoChoice = False
-                    board.next = int(key)
-                board.display(win)
-        except Exception as e:
-            # No input
-            current = int(time.time())
-            if counter < current:
-                board.incrementTime()
-                board.display(win)
-                counter = current
-
-if __name__ == '__main__':
-    curses.wrapper(main)
