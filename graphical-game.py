@@ -52,8 +52,7 @@ def main():
 
     game = tetris.Tetris()
     
-    done = False
-    while not done: # game loop
+    while not game.lost: # game loop ends when game is lost
         #runGame()
         checkForQuit()
         for event in pygame.event.get(): # event handling loop
@@ -74,12 +73,12 @@ def main():
         game.incrementTime()
 
         DISPLAYSURF.fill(BGCOLOR)
-        drawBoard(game.grid)
 
         pygame.display.update()
         FPSCLOCK.tick(FPS)
         
     showTextScreen('Game Over')
+    main()
 
 def makeTextObjs(text, font, color):
     surf = font.render(text, True, color)
