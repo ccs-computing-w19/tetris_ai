@@ -1,4 +1,4 @@
-
+import tetris
 import pygame, sys
 
 FPS = 25
@@ -45,9 +45,12 @@ def main():
     DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
     BASICFONT = pygame.font.Font('freesansbold.ttf', 18)
     BIGFONT = pygame.font.Font('freesansbold.ttf', 100)
+    print("S")
     pygame.display.set_caption('Tetromino')
-
     showTextScreen('Tetromino')
+    print("D")
+
+    game = tetris.Tetris()
     
     done = False
     while not done: # game loop
@@ -55,10 +58,23 @@ def main():
         checkForQuit()
         for event in pygame.event.get(): # event handling loop
             if event.type == pygame.KEYDOWN:
-                done = True
-            
+                if event.key == pygame.K_UP:
+                    game.rotateActiveClockwise()
+                if event.key == pygame.K_DOWN:
+                    game.incrementTime()
+                if event.key == pygame.K_RIGHT:
+                    game.translateActiveRight()
+                if event.key == pygame.K_LEFT:
+                    game.translateActiveLeft()
+                if event.key == pygame.K_SPACE:
+                    game.hardDrop()
+
+
+
+        game.incrementTime()
+
         DISPLAYSURF.fill(BGCOLOR)
-        #drawBoard(board)
+        drawBoard(game.grid)
 
         pygame.display.update()
         FPSCLOCK.tick(FPS)
