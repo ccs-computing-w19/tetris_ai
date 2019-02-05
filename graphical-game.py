@@ -3,7 +3,7 @@
 import tetris
 import pygame, sys
 
-FPS = 25
+FPS = 10
 WINDOWWIDTH = 580
 WINDOWHEIGHT = 700
 BOXSIZE = 10
@@ -39,6 +39,7 @@ LIGHTCOLORS = (LIGHTBLUE, LIGHTGREEN, LIGHTRED, LIGHTYELLOW)
 assert len(COLORS) == len(LIGHTCOLORS) # each color must have light color
 
 
+
 def main():
     global FPSCLOCK, DISPLAYSURF, BASICFONT, BIGFONT
 
@@ -48,13 +49,30 @@ def main():
     BASICFONT = pygame.font.Font('freesansbold.ttf', 18)
     BIGFONT = pygame.font.Font('freesansbold.ttf', 100)
     pygame.display.set_caption('Enomino')
+
+    ### Start menu:
+
     showTextScreen('Enomino')
+    ready = False
+    while not ready: # start screen loop
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT: # exit game
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                ready = True
+        pygame.display.update()
+        FPSCLOCK.tick()
+
+    ### Main game:
 
     game = tetris.Tetris()
     
     while not game.lost: # game loop ends when game is lost
-        checkForQuit()
         for event in pygame.event.get(): # event handling loop
+            if event.type == pygame.QUIT: # exit game
+                pygame.quit()
+                sys.exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
                     game.rotateActiveClockwise()
@@ -66,32 +84,35 @@ def main():
                     game.translateActiveLeft()
                 if event.key == pygame.K_SPACE:
                     game.hardDrop()
-                if event.key == pygame.QUIT: # exit game
-                    pygame.quit()
-                    sys.exit()
-
+                
         game.incrementTime()
-
-        DISPLAYSURF.fill(BGCOLOR)
-
-        """
-        for i in range(BOARDHEIGHT):
-            for j in range(BOARDWIDTH):
-                drawBox(i, j, game.grid[i][j].color)
-        """
         drawBoard(game.getBoard())
 
         pygame.display.update()
         FPSCLOCK.tick(FPS)
 
+    ### End menu:
+    
     DISPLAYSURF.fill(BGCOLOR)
     showTextScreen('Game Over')
+    ready = False
+    while not ready: # start screen loop
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT: # exit game
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                ready = True
+        pygame.display.update()
+        FPSCLOCK.tick()
 
 def makeTextObjs(text, font, color):
     surf = font.render(text, True, color)
     return surf, surf.get_rect()
 
 def showTextScreen(text):
+    DISPLAYSURF.fill(BGCOLOR)
+
     # This function displays large text in the
     # center of the screen until a key is pressed.
     # Draw the text drop shadow
@@ -108,10 +129,6 @@ def showTextScreen(text):
     pressKeySurf, pressKeyRect = makeTextObjs('Press a key to play.', BASICFONT, TEXTCOLOR)
     pressKeyRect.center = (int(WINDOWWIDTH / 2), int(WINDOWHEIGHT / 2) + 100)
     DISPLAYSURF.blit(pressKeySurf, pressKeyRect)
-
-    while checkForKeyPress() == None:
-        pygame.display.update()
-        FPSCLOCK.tick()
 
 
 def convertToPixelCoords(boxx, boxy):
@@ -134,15 +151,17 @@ def drawBox(boxx, boxy, color, pixelx=None, pixely=None):
 
 
 def drawBoard(board):
+    DISPLAYSURF.fill(BGCOLOR)
+
     # draw the border around the board
     pygame.draw.rect(DISPLAYSURF, BORDERCOLOR, (XMARGIN - 3, TOPMARGIN - 7, (BOARDWIDTH * BOXSIZE) + 8, (BOARDHEIGHT * BOXSIZE) + 8), 5)
 
     # fill the background of the board
     pygame.draw.rect(DISPLAYSURF, BGCOLOR, (XMARGIN, TOPMARGIN, BOXSIZE * BOARDWIDTH, BOXSIZE * BOARDHEIGHT))
     # draw the individual boxes on the board
-    for x in range(BOARDWIDTH):
-        for y in range(BOARDHEIGHT):
-            drawBox(x, y, board[x][y])
+    for y in range(len(board)):
+        for x in range(len(board[y])):
+            drawBox(x, y, board[y][x].state)
 
 
 def drawStatus(score, level, piece):
