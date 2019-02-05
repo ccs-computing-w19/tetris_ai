@@ -2,9 +2,9 @@ import tetris
 import pygame, sys
 
 FPS = 25
-WINDOWWIDTH = 640
-WINDOWHEIGHT = 480
-BOXSIZE = 20
+WINDOWWIDTH = 580
+WINDOWHEIGHT = 700
+BOXSIZE = 10
 BOARDWIDTH = 10
 BOARDHEIGHT = 20
 BLANK = '.'
@@ -45,10 +45,8 @@ def main():
     DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
     BASICFONT = pygame.font.Font('freesansbold.ttf', 18)
     BIGFONT = pygame.font.Font('freesansbold.ttf', 100)
-    print("S")
-    pygame.display.set_caption('Tetromino')
-    showTextScreen('Tetromino')
-    print("D")
+    pygame.display.set_caption('Enomino')
+    showTextScreen('Enomino')
 
     game = tetris.Tetris()
     
@@ -68,17 +66,19 @@ def main():
                 if event.key == pygame.K_SPACE:
                     game.hardDrop()
 
-
-
         game.incrementTime()
 
         DISPLAYSURF.fill(BGCOLOR)
 
+        for i in range(BOARDHEIGHT):
+            for j in range(BOARDWIDTH):
+                drawBox(i, j, game.grid[i][j].color)
+
         pygame.display.update()
         FPSCLOCK.tick(FPS)
-        
+
+    DISPLAYSURF.fill(BGCOLOR)
     showTextScreen('Game Over')
-    main()
 
 def makeTextObjs(text, font, color):
     surf = font.render(text, True, color)
@@ -205,4 +205,5 @@ def terminate():
     sys.exit()
     
 if __name__ == "__main__":
-    main()
+    while True:
+        main()
