@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import tetris
 import pygame, sys
 
@@ -51,7 +53,6 @@ def main():
     game = tetris.Tetris()
     
     while not game.lost: # game loop ends when game is lost
-        #runGame()
         checkForQuit()
         for event in pygame.event.get(): # event handling loop
             if event.type == pygame.KEYDOWN:
@@ -65,14 +66,20 @@ def main():
                     game.translateActiveLeft()
                 if event.key == pygame.K_SPACE:
                     game.hardDrop()
+                if event.key == pygame.QUIT: # exit game
+                    pygame.quit()
+                    sys.exit()
 
         game.incrementTime()
 
         DISPLAYSURF.fill(BGCOLOR)
 
+        """
         for i in range(BOARDHEIGHT):
             for j in range(BOARDWIDTH):
                 drawBox(i, j, game.grid[i][j].color)
+        """
+        drawBoard(game.getBoard())
 
         pygame.display.update()
         FPSCLOCK.tick(FPS)
@@ -181,29 +188,7 @@ def drawNextPiece(piece):
     drawPiece(piece, pixelx=WINDOWWIDTH-120, pixely=130)
 
 
-def checkForKeyPress():
-    # Go through event queue looking for a KEYUP event.
-    # Grab KEYDOWN events to remove them from the event queue.
-    checkForQuit()
 
-    for event in pygame.event.get([pygame.KEYDOWN, pygame.KEYUP]):
-        if event.type == pygame.KEYDOWN:
-            continue
-        return event.key
-    return None
-
-def checkForQuit():
-    for event in pygame.event.get(pygame.QUIT): # get all the QUIT events
-        terminate() # terminate if any QUIT events are present
-    for event in pygame.event.get(pygame.KEYUP): # get all the KEYUP events
-        if event.key == pygame.K_ESCAPE:
-            terminate() # terminate if the KEYUP event was for the Esc key
-        pygame.event.post(event) # put the other KEYUP event objects back
-
-def terminate():
-    pygame.quit()
-    sys.exit()
-    
 if __name__ == "__main__":
     while True:
         main()

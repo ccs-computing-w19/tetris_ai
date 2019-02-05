@@ -1,4 +1,5 @@
 from random import choice, randint
+import copy
 
 class Tile:
 
@@ -197,4 +198,7 @@ class Tetris:
                     self.grid[r] = self.grid[r-1]
                 self.grid[0] = [Tile() for j in range(len(self.grid[0]))]
                 self.numLines += 1
+
+    def getBoard(self):
+        return copy.copy(self.grid)
 
