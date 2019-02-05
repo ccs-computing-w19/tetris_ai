@@ -3,7 +3,7 @@
 import tetris
 import pygame, sys
 
-FPS = 10
+FPS = 30
 WINDOWWIDTH = 580
 WINDOWHEIGHT = 700
 BOXSIZE = 10
@@ -53,12 +53,12 @@ def main():
     ### Start menu:
 
     showTextScreen('Enomino')
+
     ready = False
     while not ready: # start screen loop
         for event in pygame.event.get():
-            if event.type == pygame.QUIT: # exit game
-                pygame.quit()
-                sys.exit()
+            if event.type == pygame.QUIT: 
+                terminate() # exit game
             if event.type == pygame.KEYDOWN:
                 ready = True
         pygame.display.update()
@@ -70,9 +70,8 @@ def main():
     
     while not game.lost: # game loop ends when game is lost
         for event in pygame.event.get(): # event handling loop
-            if event.type == pygame.QUIT: # exit game
-                pygame.quit()
-                sys.exit()
+            if event.type == pygame.QUIT:
+                terminate() # exit game
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
                     game.rotateActiveClockwise()
@@ -84,7 +83,7 @@ def main():
                     game.translateActiveLeft()
                 if event.key == pygame.K_SPACE:
                     game.hardDrop()
-                
+        
         game.incrementTime()
         drawBoard(game.getBoard())
 
@@ -93,18 +92,23 @@ def main():
 
     ### End menu:
     
-    DISPLAYSURF.fill(BGCOLOR)
     showTextScreen('Game Over')
+
     ready = False
     while not ready: # start screen loop
         for event in pygame.event.get():
-            if event.type == pygame.QUIT: # exit game
-                pygame.quit()
-                sys.exit()
+            if event.type == pygame.QUIT:
+                terminate() # exit game
             if event.type == pygame.KEYDOWN:
                 ready = True
         pygame.display.update()
         FPSCLOCK.tick()
+
+def terminate():
+    pygame.quit()
+    sys.exit()
+
+
 
 def makeTextObjs(text, font, color):
     surf = font.render(text, True, color)
