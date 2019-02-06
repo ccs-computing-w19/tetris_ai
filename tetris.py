@@ -78,6 +78,11 @@ class Tetris:
         [(0, 4, False), (0, 5, False), (1, 4, False), (1, 5, False)],
         [(0, 3, False), (0, 4, False), (1, 4, True), (1, 5, False)],
         [(0, 5, False), (0, 6, False), (1, 4, False), (1, 5, True)],
+        #EXTRA:
+        [(0, 3, False), (0, 4, True), (1, 4, False)],
+        [(0, 3, False), (0, 4, True), (0, 5, False)],
+        [(0, 4, False), (0, 5, True)],
+        [(0, 4, False)],
     ]
 
     # Creates a new piece at the top of the board

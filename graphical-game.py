@@ -2,6 +2,7 @@
 
 import tetris
 import pygame, sys
+from math import pi, sin
 
 FPS = 30
 WINDOWWIDTH = 580
@@ -19,7 +20,7 @@ TOPMARGIN = (WINDOWHEIGHT - BOARDHEIGHT * BOXSIZE) // 2 - 5
 
 #               R    G    B
 WHITE       = (255, 255, 255)
-GRAY        = (185, 185, 185)
+GRAY        = (192, 192, 192)
 BLACK       = (  0,   0,   0)
 RED         = (155,   0,   0)
 LIGHTRED    = (175,  20,  20)
@@ -27,28 +28,37 @@ GREEN       = (  0, 155,   0)
 LIGHTGREEN  = ( 20, 175,  20)
 BLUE        = (  0,   0, 155)
 LIGHTBLUE   = ( 20,  20, 175)
+DARKBLUE    = (  0,   0,  50)
 YELLOW      = (155, 155,   0)
 LIGHTYELLOW = (175, 175,  20)
 LIGHTYELLOW = (175, 175,  20)
-BOTTICELLI  = (192, 206, 218)
-BOTTILIGHT  = (212, 226, 238)
+BOTTILIGHT  = (222, 236, 248)
+BOTTICELLI  = (212, 226, 238)
 
-BORDERCOLOR = BLUE
+BORDERCOLOR = DARKBLUE
 BGCOLOR = LIGHTBLUE
 TEXTCOLOR = WHITE
 TEXTSHADOWCOLOR = GRAY
-COLORS      = (BOTTICELLI,      GREEN,      RED,      YELLOW)
-LIGHTCOLORS = (BOTTILIGHT, LIGHTGREEN, LIGHTRED, LIGHTYELLOW)
-assert len(COLORS) == len(LIGHTCOLORS) # each color must have light color
+BLANKCOLOR = BOTTICELLI
+LIGHTBLANKCOLOR = BOTTILIGHT
+CANVASCOLOR = GRAY
 
+# Code to generate block colors
+MAXCOLORS = 360
+def getColorFromNumber(n):
+    red = int(min(max(100 * (sin((n + 90) * pi / 180) + 1), 44), 162))
+    green = int(min(max(100 * (sin((n + 210) * pi / 180) + 1), 44), 162))
+    blue = int(min(max(100 * (sin((n + 330) * pi / 180) + 1), 44), 162))
+    return (red, green, blue)
 
-def getColorFromNumber(num):
-    pass
-
+def getLightFromNumber(n):
+    red = int(min(max(125 * (sin((n + 90) * pi / 180) + 1), 55), 204))
+    green = int(min(max(125 * (sin((n + 210) * pi / 180) + 1), 55), 204))
+    blue = int(min(max(125 * (sin((n + 330) * pi / 180) + 1), 55), 204))
+    return (red, green, blue)
 
 def start():
     global FPSCLOCK, DISPLAYSURF, BASICFONT, BIGFONT
-
     pygame.init()
     FPSCLOCK = pygame.time.Clock()
     DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
@@ -57,9 +67,7 @@ def start():
     pygame.display.set_caption('Enomino')
 
     ### Start menu:
-
     showTextScreen('Enomino')
-
     ready = False
     while not ready: # start screen loop
         for event in pygame.event.get():
@@ -72,13 +80,12 @@ def start():
 
 
 def main():
-
-    game = tetris.Tetris(numColors=3)
-    elapsed = 0
+    game = tetris.Tetris(numColors=MAXCOLORS)
 
     drawStatus(game.numTurns, game.numLines, game.next)
     drawBoard(game.getBoard())
-
+    elapsed = 0
+    speed = 30 # higher is slower
     while not game.lost: # game loop ends when game is lost
         for event in pygame.event.get(): # event handling loop
             if event.type == pygame.QUIT:
@@ -97,7 +104,7 @@ def main():
                     game.hardDrop()
                 drawBoard(game.getBoard())
         
-        if elapsed > 30:
+        if elapsed > speed:
             game.incrementTime()
             elapsed = 0
             drawStatus(game.numTurns, game.numLines, game.next)
@@ -108,9 +115,7 @@ def main():
         elapsed += 1
 
     ### End menu:
-    
     showTextScreen('Game Over')
-
     ready = False
     while not ready: # start screen loop
         for event in pygame.event.get():
@@ -164,22 +169,21 @@ def drawBox(boxx, boxy, color, pixelx=None, pixely=None):
     # at xy coordinates on the board. Or, if pixelx & pixely
     # are specified, draw to the pixel coordinates stored in
     # pixelx & pixely (this is used for the "Next" piece).
-    if color == BLANK:
-        return
     if pixelx == None and pixely == None:
         pixelx, pixely = convertToPixelCoords(boxx, boxy)
-    pygame.draw.rect(DISPLAYSURF, COLORS[color], (pixelx + 1, pixely + 1, BOXSIZE - 1, BOXSIZE - 1))
-    pygame.draw.rect(DISPLAYSURF, LIGHTCOLORS[color], (pixelx + 1, pixely + 1, BOXSIZE - 4, BOXSIZE - 4))
+    if color != 100:
+        pygame.draw.rect(DISPLAYSURF, getColorFromNumber(color) if color != 0 else LIGHTBLANKCOLOR, (pixelx + 1, pixely + 1, BOXSIZE - 1, BOXSIZE - 1))
+        pygame.draw.rect(DISPLAYSURF, getLightFromNumber(color) if color != 0 else LIGHTBLANKCOLOR, (pixelx + 1, pixely + 1, BOXSIZE - 4, BOXSIZE - 4))
 
 
 def drawBoard(board):
     DISPLAYSURF.fill(BGCOLOR)
 
     # draw the border around the board
-    pygame.draw.rect(DISPLAYSURF, BORDERCOLOR, (XMARGIN - 3, TOPMARGIN - 7, (BOARDWIDTH * BOXSIZE) + 8, (BOARDHEIGHT * BOXSIZE) + 8), 5)
+    pygame.draw.rect(DISPLAYSURF, BORDERCOLOR, (XMARGIN - 3, TOPMARGIN - 3, (BOARDWIDTH * BOXSIZE) + 8, (BOARDHEIGHT * BOXSIZE) + 8), 5)
 
     # fill the background of the board
-    pygame.draw.rect(DISPLAYSURF, BGCOLOR, (XMARGIN, TOPMARGIN, BOXSIZE * BOARDWIDTH, BOXSIZE * BOARDHEIGHT))
+    pygame.draw.rect(DISPLAYSURF, CANVASCOLOR, (XMARGIN, TOPMARGIN, BOXSIZE * BOARDWIDTH, BOXSIZE * BOARDHEIGHT))
     # draw the individual boxes on the board
     for y in range(len(board)):
         for x in range(len(board[y])):
