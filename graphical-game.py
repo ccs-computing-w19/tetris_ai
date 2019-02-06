@@ -6,7 +6,7 @@ import pygame, sys
 FPS = 30
 WINDOWWIDTH = 580
 WINDOWHEIGHT = 700
-BOXSIZE = 10
+BOXSIZE = 30
 BOARDWIDTH = 10
 BOARDHEIGHT = 20
 BLANK = '.'
@@ -14,8 +14,8 @@ BLANK = '.'
 MOVESIDEWAYSFREQ = 0.15
 MOVEDOWNFREQ = 0.1
 
-XMARGIN = int((WINDOWWIDTH - BOARDWIDTH * BOXSIZE) / 2)
-TOPMARGIN = WINDOWHEIGHT - (BOARDHEIGHT * BOXSIZE) - 5
+XMARGIN = (WINDOWWIDTH - BOARDWIDTH * BOXSIZE) // 2
+TOPMARGIN = (WINDOWHEIGHT - BOARDHEIGHT * BOXSIZE) // 2 - 5
 
 #               R    G    B
 WHITE       = (255, 255, 255)
@@ -29,18 +29,19 @@ BLUE        = (  0,   0, 155)
 LIGHTBLUE   = ( 20,  20, 175)
 YELLOW      = (155, 155,   0)
 LIGHTYELLOW = (175, 175,  20)
+LIGHTYELLOW = (175, 175,  20)
+BOTTICELLI  = (192, 206, 218)
+BOTTILIGHT  = (212, 226, 238)
 
 BORDERCOLOR = BLUE
-BGCOLOR = BLACK
+BGCOLOR = LIGHTBLUE
 TEXTCOLOR = WHITE
 TEXTSHADOWCOLOR = GRAY
-COLORS      = (     BLUE,      GREEN,      RED,      YELLOW)
-LIGHTCOLORS = (LIGHTBLUE, LIGHTGREEN, LIGHTRED, LIGHTYELLOW)
+COLORS      = (BOTTICELLI,      GREEN,      RED,      YELLOW)
+LIGHTCOLORS = (BOTTILIGHT, LIGHTGREEN, LIGHTRED, LIGHTYELLOW)
 assert len(COLORS) == len(LIGHTCOLORS) # each color must have light color
 
-
-
-def main():
+def start():
     global FPSCLOCK, DISPLAYSURF, BASICFONT, BIGFONT
 
     pygame.init()
@@ -64,10 +65,14 @@ def main():
         pygame.display.update()
         FPSCLOCK.tick()
 
-    ### Main game:
+def main():
 
-    game = tetris.Tetris()
-    
+    game = tetris.Tetris(numColors=3)
+    elapsed = 0
+
+    drawStatus(game.numTurns, game.numLines, game.next)
+    drawBoard(game.getBoard())
+
     while not game.lost: # game loop ends when game is lost
         for event in pygame.event.get(): # event handling loop
             if event.type == pygame.QUIT:
@@ -77,18 +82,24 @@ def main():
                     game.rotateActiveClockwise()
                 if event.key == pygame.K_DOWN:
                     game.incrementTime()
+                    elapsed = 0
                 if event.key == pygame.K_RIGHT:
                     game.translateActiveRight()
                 if event.key == pygame.K_LEFT:
                     game.translateActiveLeft()
                 if event.key == pygame.K_SPACE:
                     game.hardDrop()
+                drawBoard(game.getBoard())
         
-        game.incrementTime()
-        drawBoard(game.getBoard())
+        if elapsed > 30:
+            game.incrementTime()
+            elapsed = 0
+            drawStatus(game.numTurns, game.numLines, game.next)
+            drawBoard(game.getBoard())
 
         pygame.display.update()
         FPSCLOCK.tick(FPS)
+        elapsed += 1
 
     ### End menu:
     
@@ -165,7 +176,7 @@ def drawBoard(board):
     # draw the individual boxes on the board
     for y in range(len(board)):
         for x in range(len(board[y])):
-            drawBox(x, y, board[y][x].state)
+            drawBox(x, y, board[y][x].color)
 
 
 def drawStatus(score, level, piece):
@@ -213,5 +224,6 @@ def drawNextPiece(piece):
 
 
 if __name__ == "__main__":
+    start()
     while True:
         main()

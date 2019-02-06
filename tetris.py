@@ -47,9 +47,10 @@ class Tile:
 
 class Tetris:
 
-    def __init__(self, numRows=20, numColumns=10):
+    def __init__(self, numRows=20, numColumns=10, numColors=0):
         self.grid = [[Tile() for j in range(numColumns)] for i in range(numRows)]
-        
+        self.numColors = numColors
+
         self.next = randint(1, len(self.PIECES))
         self.autoChoice = True
         self.pivot = (-1, -1) #flag that stores the pivot
@@ -81,8 +82,9 @@ class Tetris:
 
     # Creates a new piece at the top of the board
     def generateNewPiece(self):
+        color = randint(1, self.numColors)
         for loc in self.PIECES[self.next - 1]:
-            self.grid[loc[0]][loc[1]] = Tile(state=2, pivot=loc[2])
+            self.grid[loc[0]][loc[1]] = Tile(state=2, pivot=loc[2], color=color)
             if loc[2]: self.pivot = (loc[0], loc[1])
         if self.autoChoice:
             self.next = randint(1, len(self.PIECES))
