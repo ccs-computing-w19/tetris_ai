@@ -41,6 +41,11 @@ COLORS      = (BOTTICELLI,      GREEN,      RED,      YELLOW)
 LIGHTCOLORS = (BOTTILIGHT, LIGHTGREEN, LIGHTRED, LIGHTYELLOW)
 assert len(COLORS) == len(LIGHTCOLORS) # each color must have light color
 
+
+def getColorFromNumber(num):
+    pass
+
+
 def start():
     global FPSCLOCK, DISPLAYSURF, BASICFONT, BIGFONT
 
@@ -64,6 +69,7 @@ def start():
                 ready = True
         pygame.display.update()
         FPSCLOCK.tick()
+
 
 def main():
 
@@ -115,15 +121,16 @@ def main():
         pygame.display.update()
         FPSCLOCK.tick()
 
+
 def terminate():
     pygame.quit()
     sys.exit()
 
 
-
 def makeTextObjs(text, font, color):
     surf = font.render(text, True, color)
     return surf, surf.get_rect()
+
 
 def showTextScreen(text):
     DISPLAYSURF.fill(BGCOLOR)
@@ -220,6 +227,7 @@ def drawNextPiece(piece):
     DISPLAYSURF.blit(nextSurf, nextRect)
     # draw the "next" piece
     drawPiece(piece, pixelx=WINDOWWIDTH-120, pixely=130)
+
 
 
 
