@@ -7,7 +7,7 @@ from math import pi, sin
 FPS = 30
 WINDOWWIDTH = 580
 WINDOWHEIGHT = 700
-BOXSIZE = 30
+BOXSIZE = 25
 BOARDWIDTH = 10
 BOARDHEIGHT = 20
 BLANK = '.'
@@ -81,9 +81,8 @@ def start():
 
 def main():
     game = tetris.Tetris(numColors=MAXCOLORS)
+    render(game)
 
-    drawStatus(game.numTurns, game.numLines, game.next)
-    drawBoard(game.getBoard())
     elapsed = 0
     speed = 30 # higher is slower
     while not game.lost: # game loop ends when game is lost
@@ -102,13 +101,12 @@ def main():
                     game.translateActiveLeft()
                 if event.key == pygame.K_SPACE:
                     game.hardDrop()
-                drawBoard(game.getBoard())
+                render(game)
         
         if elapsed > speed:
             game.incrementTime()
             elapsed = 0
-            drawStatus(game.numTurns, game.numLines, game.next)
-            drawBoard(game.getBoard())
+            render(game)
 
         pygame.display.update()
         FPSCLOCK.tick(FPS)
@@ -130,6 +128,11 @@ def main():
 def terminate():
     pygame.quit()
     sys.exit()
+
+
+def render(game):
+    drawBoard(game.getBoard())
+    drawStatus(game.numTurns, game.numLines, game.next)
 
 
 def makeTextObjs(text, font, color):
