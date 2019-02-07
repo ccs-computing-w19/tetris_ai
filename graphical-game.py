@@ -174,9 +174,8 @@ def drawBox(boxx, boxy, color, pixelx=None, pixely=None):
     # pixelx & pixely (this is used for the "Next" piece).
     if pixelx == None and pixely == None:
         pixelx, pixely = convertToPixelCoords(boxx, boxy)
-    if color != 100:
-        pygame.draw.rect(DISPLAYSURF, getColorFromNumber(color) if color != 0 else LIGHTBLANKCOLOR, (pixelx + 1, pixely + 1, BOXSIZE - 1, BOXSIZE - 1))
-        pygame.draw.rect(DISPLAYSURF, getLightFromNumber(color) if color != 0 else LIGHTBLANKCOLOR, (pixelx + 1, pixely + 1, BOXSIZE - 4, BOXSIZE - 4))
+    pygame.draw.rect(DISPLAYSURF, getColorFromNumber(color) if color != 0 else LIGHTBLANKCOLOR, (pixelx + 1, pixely + 1, BOXSIZE - 1, BOXSIZE - 1))
+    pygame.draw.rect(DISPLAYSURF, getLightFromNumber(color) if color != 0 else LIGHTBLANKCOLOR, (pixelx + 1, pixely + 1, BOXSIZE - 4, BOXSIZE - 4))
 
 
 def drawBoard(board):

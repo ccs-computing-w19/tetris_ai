@@ -51,7 +51,8 @@ class Tetris:
         self.grid = [[Tile() for j in range(numColumns)] for i in range(numRows)]
         self.numColors = numColors
 
-        self.next = randint(1, len(self.PIECES))
+        self.next = self.randomPiece()
+        self.nextColor = self.randomColor()
         self.autoChoice = True
         self.pivot = (-1, -1) #flag that stores the pivot
 
@@ -85,14 +86,20 @@ class Tetris:
         [(0, 4, False)],
     ]
 
+    def randomPiece(self):
+        return randint(1, len(self.PIECES))
+
+    def randomColor(self):
+        return randint(1, self.numColors)
+
     # Creates a new piece at the top of the board
     def generateNewPiece(self):
-        color = randint(1, self.numColors)
-        for loc in self.PIECES[self.next - 1]:
-            self.grid[loc[0]][loc[1]] = Tile(state=2, pivot=loc[2], color=color)
+        for loc in self.PIECES[self.next - 1]: # subtract 1 for zero-indexing
+            self.grid[loc[0]][loc[1]] = Tile(state=2, pivot=loc[2], color=self.nextColor)
             if loc[2]: self.pivot = (loc[0], loc[1])
         if self.autoChoice:
-            self.next = randint(1, len(self.PIECES))
+            self.next = self.randomPiece()
+        self.nextColor = self.randomColor()
         self.numPieces += 1
 
     # Rotates the active block clockwise
