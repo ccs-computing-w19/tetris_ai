@@ -51,15 +51,17 @@ class Tetris:
         self.grid = [[Tile() for j in range(numColumns)] for i in range(numRows)]
         self.numColors = numColors
 
-        self.next = self.randomPiece()
-        self.nextColor = self.randomColor()
-        self.autoChoice = True
-        self.pivot = (-1, -1) #flag that stores the pivot
-
         self.lost = False
         self.numTurns = 0
         self.numLines = 0
         self.numPieces = 0
+
+        self.next = self.randomPiece()
+        self.BASECOLOR = randint(1, 360)
+        self.nextColor = self.randomColor()
+        self.numPieces += 1 #update number of pieces
+        self.autoChoice = True
+        self.pivot = (-1, -1) #flag that stores the pivot
 
         self.generateNewPiece()
     
@@ -72,31 +74,63 @@ class Tetris:
                 if self.grid[i][j].updated: self.grid[i][j].update()
     
     PIECES = [
-        [(0, 3, False), (0, 4, True), (0, 5, False), (0, 6, False)],
-        [(0, 3, False), (0, 4, True), (0, 5, False), (1, 4, False)],
-        [(0, 4, False), (0, 5, True), (0, 6, False), (1, 4, False)],
-        [(0, 3, False), (0, 4, True), (0, 5, False), (1, 5, False)],
-        [(0, 4, False), (0, 5, False), (1, 4, False), (1, 5, False)],
-        [(0, 3, False), (0, 4, False), (1, 4, True), (1, 5, False)],
-        [(0, 5, False), (0, 6, False), (1, 4, False), (1, 5, True)],
-        #EXTRA:
-        [(0, 3, False), (0, 4, True), (1, 4, False)],
-        [(0, 3, False), (0, 4, True), (0, 5, False)],
-        [(0, 4, False), (0, 5, True)],
-        [(0, 4, False)],
+        [(0, 0, False), (0, 1, True), (0, 2, False), (0, 3, False)],
+        # x*xx
+        # ....
+        [(1, 0, False), (1, 1, True), (1, 2, False), (0, 1, False)],
+        # .x..
+        # x*x.
+        [(0, 1, False), (0, 2, True), (0, 3, False), (1, 1, False)],
+        # .x*x
+        # .x..
+        [(0, 0, False), (0, 1, True), (0, 2, False), (1, 2, False)],
+        # x*x.
+        # ..x.
+        [(0, 1, False), (0, 2, False), (1, 1, False), (1, 2, False)],
+        # .xx.
+        # .xx.
+        [(0, 0, False), (0, 1, False), (1, 1, True), (1, 2, False)],
+        # xx..
+        # .*x.
+        [(0, 2, False), (0, 3, False), (1, 1, False), (1, 2, True)],
+        # ..xx
+        # .x*.
+        [(0, 1, False), (1, 1, True), (1, 2, False)],
+        # .x..
+        # .*x.
+        [(0, 0, False), (0, 1, True), (0, 2, False)],
+        # x*x.
+        # ....
+        [(0, 1, True), (0, 2, False)],
+        # .*x.
+        # ....
+        [(0, 1, False)],
+        # .x..
+        # ....
     ]
 
     def randomPiece(self):
         return randint(1, len(self.PIECES))
 
     def randomColor(self):
-        return randint(1, self.numColors)
+        #return randint(1, self.numColors)
+        return ((self.numPieces * 133) + self.BASECOLOR + (self.numTurns % 30)) % self.numColors + 1
+
+    def setNextPiece(self, piece):
+        if piece == 0:
+            self.autoChoice = True
+            self.next = self.randomPiece()
+        else:
+            self.autoChoice = False
+            self.next = piece
 
     # Creates a new piece at the top of the board
     def generateNewPiece(self):
+        offset = len(self.grid[0]) // 2 - 2
         for loc in self.PIECES[self.next - 1]: # subtract 1 for zero-indexing
-            self.grid[loc[0]][loc[1]] = Tile(state=2, pivot=loc[2], color=self.nextColor)
-            if loc[2]: self.pivot = (loc[0], loc[1])
+            if self.grid[loc[0]][loc[1] + offset].isInactive(): self.lost = True # losing the game
+            self.grid[loc[0]][loc[1] + offset] = Tile(state=2, pivot=loc[2], color=self.nextColor)
+            if loc[2]: self.pivot = (loc[0], loc[1] + offset)
         if self.autoChoice:
             self.next = self.randomPiece()
         self.nextColor = self.randomColor()
@@ -122,9 +156,25 @@ class Tetris:
                             if not self.grid[i][j].updated: self.grid[i][j].reset()
                 self.updateBoard()
     
-    # Rotates the active block clockwise
+    # Rotates the active block counterclockwise
     def rotateActiveCounterclockwise(self):
-        pass
+        if self.rotatable(): #if there is a pivot
+            error = False
+            for i in range(len(self.grid)):
+                for j in range(len(self.grid[i])):
+                    if self.grid[i][j].isActive():
+                        if self.pivot[0] + self.pivot[1] - j > len(self.grid) - 1 or i + self.pivot[1] - self.pivot[0] > len(self.grid[0]) - 1 or self.pivot[0] + self.pivot[1] - j < 0 or i + self.pivot[1] - self.pivot[0] < 0 or self.grid[self.pivot[0] + self.pivot[1] - j][i + self.pivot[1] - self.pivot[0]].isInactive():
+                            error = True; break
+                else:
+                    continue
+                break
+            if not error:
+                for i in range(len(self.grid)):
+                    for j in range(len(self.grid[i])):
+                        if self.grid[i][j].isActive():
+                            self.grid[self.pivot[0] + self.pivot[1] - j][i + self.pivot[1] - self.pivot[0]].copy(self.grid[i][j])
+                            if not self.grid[i][j].updated: self.grid[i][j].reset()
+                self.updateBoard()
     
     # Moves the active block left
     def translateActiveLeft(self):
@@ -189,8 +239,9 @@ class Tetris:
         self.numTurns += 1
         self.updateBoard()
         if onBottom:
-            for i in range(len(self.grid[0])):
-                if self.grid[0][i].isInactive(): self.lost = True; break
+            # old definition of losing:
+            #for i in range(len(self.grid[0])):
+            #    if self.grid[0][i].isInactive(): self.lost = True; break
             self.pivot = (-1, -1)
             self.lineClear()
             self.generateNewPiece()
