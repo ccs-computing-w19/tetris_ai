@@ -20,9 +20,8 @@ LIGHTBLANKCOLOR = (222, 236, 248)
 CANVASCOLOR = (180, 170, 170)
 
 
-INPUT = False
-DELAY = 1 # delay between each incrementTime
-    
+INPUT = True
+DELAY = 15 # delay between each incrementTime
 
 
 def main():
@@ -33,6 +32,13 @@ def main():
     BASICFONT = pygame.font.Font('freesansbold.ttf', 18)
     BIGFONT = pygame.font.Font('freesansbold.ttf', 72)
     pygame.display.set_caption('Enomino')
+
+    print()
+    if len(sys.argv) < 2 or not sys.argv[1] == "--silent":
+        musicFile = 'music.mp3'
+        pygame.mixer.init()
+        pygame.mixer.music.load(musicFile)
+        pygame.mixer.music.play(-1)
 
     playStartMenu()
     while True:
@@ -292,5 +298,6 @@ def render(game):
 
 
 if __name__ == "__main__":
+    print("Use --silent for mute")
     main()
 
