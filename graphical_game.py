@@ -5,7 +5,7 @@ import pygame, sys
 from math import pi, sin
 import random
 
-FPS = 30
+FPS = 60
 WINDOWWIDTH = 480
 WINDOWHEIGHT = 600
 
@@ -20,8 +20,8 @@ LIGHTBLANKCOLOR = (222, 236, 248)
 CANVASCOLOR = (180, 170, 170)
 
 
-INPUT = True
-DELAY = 15 # delay between each incrementTime
+INPUT = False
+DELAY = 1 # delay between each incrementTime
 
 
 def main():
@@ -105,9 +105,10 @@ def playGame():
         timeSinceIncrement += 1
 
 
-
+from ai import *
 def ai(game, moves, numPieces):
     if game.numPieces > numPieces:
+        findPositions(game.getBoard(), game.pivot != (-1, -1))
         n = random.randint(-5, 5)
         for i in range(random.randint(0, 3)):
             game.rotateActiveClockwise()
