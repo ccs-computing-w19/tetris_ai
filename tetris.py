@@ -59,9 +59,8 @@ class Tetris:
         self.next = self.randomPiece()
         self.BASECOLOR = randint(1, 360)
         self.nextColor = self.randomColor()
-        self.numPieces += 1 #update number of pieces
         self.autoChoice = True
-        self.pivot = (-1, -1) #flag that stores the pivot
+        self.pivot = (-1, -1) # flag that stores the pivot
 
         self.generateNewPiece()
     
@@ -131,10 +130,11 @@ class Tetris:
             if self.grid[loc[0]][loc[1] + offset].isInactive(): self.lost = True # losing the game
             self.grid[loc[0]][loc[1] + offset] = Tile(state=2, pivot=loc[2], color=self.nextColor)
             if loc[2]: self.pivot = (loc[0], loc[1] + offset)
+        self.numPieces += 1 # update number of pieces
         if self.autoChoice:
             self.next = self.randomPiece()
         self.nextColor = self.randomColor()
-        self.numPieces += 1
+        
 
     # Rotates the active block clockwise
     def rotateActiveClockwise(self):
