@@ -72,8 +72,7 @@ class Tetris:
             for j in range(len(self.grid[i])):
                 if self.grid[i][j].updated: self.grid[i][j].update()
     
-    
-        """
+    PIECES = [
         [(0, 0, False), (0, 1, True), (0, 2, False), (0, 3, False)],
         # x*xx
         # ....
@@ -101,9 +100,6 @@ class Tetris:
         [(0, 0, False), (0, 1, True), (0, 2, False)],
         # x*x.
         # ....
-        
-        """
-    PIECES = [
         [(0, 1, True), (0, 2, False)],
         # .*x.
         # ....

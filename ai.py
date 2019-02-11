@@ -7,16 +7,27 @@ def print_out(board):
             string += str(board[i][j].state)
         print(string)
 
+# return: start point rotated around pivot point (clockwise)
+# params: start point, pivot point
 def rotate(point, pivot):
     return (point[1] - pivot[1] + pivot[0], pivot[0] - point[0] + pivot[1], point[2] + 1)
 
-# return: list of end positions, parameter: game board
-def findPositions(board, rotatable):
-    print_out(board)
-    tiles = []
+# return: position of active piece
+# params: game board
+def getActivePosition(board):
+    position = []
     for i in range(len(board)):
         for j in range(len(board[i])):
-            if board[i][j].state == 2: tiles.append((i, j))
+            if board[i][j].state == 2: position.append((i, j, 0))
+            # position[2] is the rotation, which is default, so 0
+    return position
+
+# return: list of valid end positions
+# params: game board, if the piece is rotatable
+def findPositions(board, rotatable):
+    # find the position of the initial piece:
+    tiles = getActivePosition(board)
+    # then, find every translation and rotation of the initial position:
     arrangements = []
     for i in range(-tiles[0][0], -tiles[0][0] + len(board)):
         for j in range(-tiles[0][1], -tiles[0][1] + len(board[i])):
@@ -33,33 +44,41 @@ def findPositions(board, rotatable):
                     for k in range(len(arrangement)):
                         arrangement[k] = rotate(arrangement[k], pivot)
                     arrangements.append(arrangement)
-    # prune options:
+    # prune arrangements if they are invalid:
+    # meaning that they must be
+    # 1) within the bounds of the board
+    # 2) unable to be moved downwards (I.E. on the bottom)
+    # 3) not a duplicate of another valid arrangement
     pruned = []
     for arrangement in arrangements:
         valid = True
         for point in arrangement:
             if point[0] < 0 or point[0] >= len(board) or point[1] < 0 or point[1] >= len(board[0]) or board[point[0]][point[1]].isInactive():
                 valid = False; break
-        if valid:
+        if valid: # if it is still valid
             for point in arrangement:
+                # test if point is on bottom:
                 if point[0] == len(board) - 1 or board[point[0] + 1][point[1]].isInactive():
-                    pruned.append(arrangement); break
-    print(pruned)
+                    # check to see if arrangement is a duplicate:
+                    #pruned.append(arrangement)
+                    isDuplicate = False
+                    for prune in pruned:
+                        sameAsPrune = True
+                        rotation = prune[0][2] # get rotation number
+                        for point in arrangement:
+                            if (point[0], point[1], rotation) not in prune:
+                                #print("This:", (point[0], point[1], rotation))
+                                #print("not in this:", prune)
+                                #print("so add this:", arrangement)
+                                sameAsPrune = False; break
+                        if sameAsPrune:
+                            isDuplicate = True; break
+                    if not isDuplicate:
+                        pruned.append(arrangement); break
+    return pruned
 
-    #while a < len(arrangements):
-    #   onBottom = False
-    #    for point in arrangements[a]:
-    #        if point[0] < 0 or point[0] >= len(board) or point[1] < 0 or point[1] >= len(board[0]) or board[point[0]][point[1]].isInactive():
-    #            del arrangements[a]; break
-    #        elif point[0] == len(board) - 1 or board[point[0] + 1][point[1]].isInactive():
-    #            onBottom = True
-    #    if not onBottom:
-    #        print('A:', len(arrangements))
-    #        del arrangements[a]
-    #        print('B:', len(arrangements))
-    #    a += 1
-    #print(arrangements)
+# return: series of moves ['d', 'd', 'r', 'r', 'r', 'l', 'l', 'l', 'd']
+# params: game board, final position of piece
+def findPath(board, position):
+    start = getActivePosition(board)
 
-# return: series of moves, parameter: end position, game board
-def findPath(board):
-    pass
