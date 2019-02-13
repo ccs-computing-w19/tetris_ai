@@ -19,9 +19,13 @@ BLANKCOLOR = (212, 226, 238)
 LIGHTBLANKCOLOR = (222, 236, 248)
 CANVASCOLOR = (180, 170, 170)
 
+INPUT = True
+DELAY = 15 # delay between each incrementTime
 
-INPUT = False
-DELAY = 1 # delay between each incrementTime
+
+def switchToAI():
+    global INPUT, DELAY
+    INPUT = False; DELAY = 1
 
 
 def main():
@@ -108,17 +112,30 @@ def playGame():
 from ai import *
 def ai(game, moves, numPieces):
     if game.numPieces > numPieces:
-        findPositions(game.getBoard(), game.pivot != (-1, -1))
-        n = random.randint(-5, 5)
-        for i in range(random.randint(0, 3)):
-            game.rotateActiveClockwise()
-        if n > 0:
-            for i in range(n):
-                game.translateActiveLeft()
-        else:
-            for i in range(-n):
-                game.translateActiveRight()
+
+        position = getActivePosition(game.getBoard(), game.pivot)
+        positions = findPositions(game.getBoard(), position, game.rotatable)
+        i = -1; path = None
+        while path == None:
+            target = positions[i]#random.choice(positions)
+            path = findPath(game.getBoard(), position, target, game.rotatable)
+            i -= 1
+        print(path)
+        moves = path
         numPieces += 1
+    while len(moves) > 0:
+        if moves[0] == 'd':
+            del moves[0]
+            return moves, numPieces
+        elif moves[0] == 'r':
+            del moves[0]
+            game.translateActiveRight()
+        elif moves[0] == 'l':
+            del moves[0]
+            game.translateActiveLeft()
+        elif moves[0] == 'u':
+            del moves[0]
+            game.rotateActiveClockwise()
     return moves, numPieces
 
 
@@ -145,6 +162,8 @@ def handleInput(game, pressedKeys, numTicks):
                 timeSinceIncrement = 0
             if event.key == pygame.K_z:
                 game.rotateActiveCounterclockwise()
+            if event.key == pygame.K_BACKQUOTE:
+                switchToAI()
             
             if event.key == pygame.K_0: game.setNextPiece(0)
             if event.key == pygame.K_1: game.setNextPiece(1)

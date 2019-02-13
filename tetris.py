@@ -106,6 +106,19 @@ class Tetris:
         [(0, 1, False)],
         # .x..
         # ....
+
+        [(0, 1, False), (1, 1, True), (1, 2, False)],
+        # .x..
+        # .*x.
+        [(0, 0, False), (0, 1, True), (0, 2, False)],
+        # x*x.
+        # ....
+        [(0, 1, True), (0, 2, False)],
+        # .*x.
+        # ....
+        [(0, 1, False)],
+        # .x..
+        # ....
     ]
 
     def randomPiece(self):
