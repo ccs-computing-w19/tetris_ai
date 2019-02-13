@@ -106,7 +106,7 @@ class Tetris:
         [(0, 1, False)],
         # .x..
         # ....
-
+        # THE FOLLOWING BLOCKS ARE TEMPORARY:
         [(0, 1, False), (1, 1, True), (1, 2, False)],
         # .x..
         # .*x.
