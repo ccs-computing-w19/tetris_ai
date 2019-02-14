@@ -109,20 +109,20 @@ def playGame():
         timeSinceIncrement += 1
 
 
-from ai import *
+from ai.utils.utils import getActivePosition, findPositions
+from ai.utils.pathfinding import findPath
+from ai.neighborAi import choosePosition
 def ai(game, moves, numPieces):
     if game.numPieces > numPieces:
-
         position = getActivePosition(game.getBoard(), game.pivot)
         positions = findPositions(game.getBoard(), position, game.rotatable)
-        i = -1; path = None
+        path = None
         while path == None:
-            target = positions[i]#random.choice(positions)
+            target = choosePosition(game.getBoard(), positions)
             path = findPath(game.getBoard(), position, target, game.rotatable)
-            i -= 1
-        print(path)
         moves = path
         numPieces += 1
+    # Essentially, handle input:
     while len(moves) > 0:
         if moves[0] == 'd':
             del moves[0]
