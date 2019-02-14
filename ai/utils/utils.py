@@ -1,11 +1,8 @@
 import tetris, copy
 
-def print_out(board):
-    for i in range(len(board)):
-        string = ""
-        for j in range(len(board[i])):
-            string += str(board[i][j].state)
-        print(string)
+#                               #
+#     UTILITIES FOR POINTS      #
+#                               #
 
 # return: start point rotated around pivot point (clockwise)
 # params: start point, pivot point
@@ -14,6 +11,10 @@ def rotate(point, pivot):
 
 def rotateReverse(point, pivot):
     return (pivot[0] + pivot[1] - point[1], point[0] + pivot[1] - pivot[0], (point[2] - 1) % 4)
+
+# checks if a point is in bounds
+def isOutOfBounds(board, point):
+    return point[0] < 0 or point[1] < 0 or point[0] >= len(board) or point[1] >= len(board[0])
 
 # return: position of active piece
 # params: game board
@@ -27,6 +28,10 @@ def getActivePosition(board, pivot):
                 if board[i][j].state == 2: position.append((i, j, 0))
             # position[2] is the rotation, which is default, so 0
     return position
+
+#                               #
+#       FINDING POSITIONS       #
+#                               #
 
 # return: list of valid end positions
 # params: game board, if the piece is rotatable
@@ -57,7 +62,7 @@ def findPositions(board, tiles, rotatable):
     for arrangement in arrangements:
         valid = True
         for point in arrangement:
-            if point[0] < 0 or point[0] >= len(board) or point[1] < 0 or point[1] >= len(board[0]) or board[point[0]][point[1]].isInactive():
+            if isOutOfBounds(board, point) or board[point[0]][point[1]].isInactive():
                 valid = False; break
         if valid: # if it is still valid
             for point in arrangement:
@@ -81,8 +86,9 @@ def findPositions(board, tiles, rotatable):
                         pruned.append(arrangement); break
     return pruned
 
-
-
+#                               #
+#    UTILITIES FOR POSITIONS    #
+#                               #
 
 # return if the positions are the same
 def comparePosition(position, prime):
@@ -127,7 +133,3 @@ def rotateRight(position, pivot):
 
 def rotateLeft(position, pivot):
     pass # STUB: maybe implemented later?
-
-# checks if a point is in bounds
-def isOutOfBounds(board, point):
-    return point[0] < 0 or point[1] < 0 or point[0] >= len(board) or point[1] >= len(board[0])

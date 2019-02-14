@@ -94,32 +94,22 @@ class Tetris:
         [(0, 2, False), (0, 3, False), (1, 1, False), (1, 2, True)],
         # ..xx
         # .x*.
-        [(0, 1, False), (1, 1, True), (1, 2, False)],
-        # .x..
-        # .*x.
-        [(0, 0, False), (0, 1, True), (0, 2, False)],
-        # x*x.
-        # ....
-        [(0, 1, True), (0, 2, False)],
-        # .*x.
-        # ....
-        [(0, 1, False)],
-        # .x..
-        # ....
-        # THE FOLLOWING BLOCKS ARE TEMPORARY:
-        [(0, 1, False), (1, 1, True), (1, 2, False)],
-        # .x..
-        # .*x.
-        [(0, 0, False), (0, 1, True), (0, 2, False)],
-        # x*x.
-        # ....
-        [(0, 1, True), (0, 2, False)],
-        # .*x.
-        # ....
-        [(0, 1, False)],
-        # .x..
-        # ....
     ]
+
+    """
+        [(0, 1, False), (1, 1, True), (1, 2, False)],
+        # .x..
+        # .*x.
+        [(0, 0, False), (0, 1, True), (0, 2, False)],
+        # x*x.
+        # ....
+        [(0, 1, True), (0, 2, False)],
+        # .*x.
+        # ....
+        [(0, 1, False)],
+        # .x..
+        # ....
+    """
 
     def randomPiece(self):
         return randint(1, len(self.PIECES))

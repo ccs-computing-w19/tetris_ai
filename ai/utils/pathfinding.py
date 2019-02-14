@@ -1,24 +1,12 @@
 import tetris
 from ai.utils.utils import *
-
-from os import system
-def print_out(board, position):
-    os.system('clear')
-    string = []
-    for i in range(len(board)):
-        string.append([])
-        for j in range(len(board[i])):
-            string[i].append("." if board[i][j].state == 0 else "o")
-    for point in position:
-        string[point[0]][point[1]] = "*"
-    for i in string:
-        print("".join(i))
+#from ai.utils.display import display
 
 # return: series of moves ['d', 'd', 'r', 'r', 'r', 'l', 'l', 'l', 'd']
 # params: game board, final position of piece
 def findPath(board, position, target, rotatable):
     visited = []
-    #print_out(board, target)
+    #display(board, target)
     return recFindPath(board, position, target, rotatable, visited)
 
 def recFindPath(board, position, target, rotatable, visited, left=False, right=False, rotated=0):

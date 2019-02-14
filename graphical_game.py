@@ -18,6 +18,7 @@ TEXTSHADOWCOLOR = (180, 170, 170)
 BLANKCOLOR = (212, 226, 238)
 LIGHTBLANKCOLOR = (222, 236, 248)
 CANVASCOLOR = (180, 170, 170)
+BUTTONCOLOR = (100, 100, 200)
 
 INPUT = True
 DELAY = 15 # delay between each incrementTime
@@ -25,7 +26,7 @@ DELAY = 15 # delay between each incrementTime
 
 def switchToAI():
     global INPUT, DELAY
-    INPUT = False; DELAY = 1
+    INPUT = False; DELAY = 0.1
 
 
 def main():
@@ -76,6 +77,10 @@ def playStartMenu():
 
 def playGame():
     game = tetris.Tetris(numColors=MAXCOLORS)
+    # a dictionary of pygame buttons and their functions:
+    global AI_BUTTON
+    AI_BUTTON = pygame.Rect((WINDOWWIDTH - 122, 300, 50, 30))  # ai enable button
+
     render(game)
 
     # loop count variables:
@@ -109,15 +114,20 @@ def playGame():
         timeSinceIncrement += 1
 
 
+import copy
 from ai.utils.utils import getActivePosition, findPositions
 from ai.utils.pathfinding import findPath
-from ai.neighborAi import choosePosition
+from ai.utils.display import display
+from ai.holyNeighborAi import choosePosition
 def ai(game, moves, numPieces):
     if game.numPieces > numPieces:
         position = getActivePosition(game.getBoard(), game.pivot)
         positions = findPositions(game.getBoard(), position, game.rotatable)
         path = None
         while path == None:
+            if len(positions) < 1:
+                display(game.getBoard(), position, False)
+                print("ERROR: COULDN'T FIND ANY VALID POSITIONS")
             target = choosePosition(game.getBoard(), positions)
             path = findPath(game.getBoard(), position, target, game.rotatable)
         moves = path
@@ -164,7 +174,6 @@ def handleInput(game, pressedKeys, numTicks):
                 game.rotateActiveCounterclockwise()
             if event.key == pygame.K_BACKQUOTE:
                 switchToAI()
-            
             if event.key == pygame.K_0: game.setNextPiece(0)
             if event.key == pygame.K_1: game.setNextPiece(1)
             if event.key == pygame.K_2: game.setNextPiece(2)
@@ -177,7 +186,6 @@ def handleInput(game, pressedKeys, numTicks):
             if event.key == pygame.K_9: game.setNextPiece(9)
             if event.key == pygame.K_q: game.setNextPiece(10)
             if event.key == pygame.K_w: game.setNextPiece(11)
-
             render(game)
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_UP:
@@ -188,6 +196,10 @@ def handleInput(game, pressedKeys, numTicks):
                 pressedKeys[2] = -1
             if event.key == pygame.K_RIGHT:
                 pressedKeys[3] = -1
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_pos = event.pos  # gets mouse position
+            if AI_BUTTON.collidepoint(mouse_pos):
+                switchToAI()
 
     # deal with held-down keys:
     THRESHOLD = 5 # in ticks
@@ -312,6 +324,8 @@ def render(game):
     drawBoard(game.getBoard(), (50, 50))
     drawNextPiece(game.PIECES[game.next - 1], game.nextColor, (WINDOWWIDTH - 150, 150))
     drawStatus(game.numTurns, game.numLines, game.next, (WINDOWWIDTH - 150, 50))
+    pygame.draw.rect(DISPLAYSURF, BUTTONCOLOR, AI_BUTTON)  # draw button
+    drawText("AI", BASICFONT, TEXTCOLOR, (AI_BUTTON.x + AI_BUTTON.width / 2, AI_BUTTON.y + AI_BUTTON.height / 2), center=True)
     pygame.display.update()
 
 
