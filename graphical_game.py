@@ -118,7 +118,7 @@ import copy
 from ai.utils.utils import getActivePosition, findPositions
 from ai.utils.pathfinding import findPath
 from ai.utils.display import display
-from ai.holyNeighborAi import choosePosition
+from ai.heightAi import choosePosition
 def ai(game, moves, numPieces):
     if game.numPieces > numPieces:
         position = getActivePosition(game.getBoard(), game.pivot)
