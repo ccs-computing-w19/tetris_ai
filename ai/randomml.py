@@ -17,19 +17,19 @@ def choosePosition(board, positions):
 	return positions[0]
 
 def height(board, position):
-
+	pass
 
 def lowest(board, position):
-
+	pass
 
 def holes(board, position):
-
+	pass
 
 def clears(board, posiiton):
-
+	pass
 
 def neighbors(board, position):
-
+	pass
 
 def numWells(board, position):
-
+	pass
