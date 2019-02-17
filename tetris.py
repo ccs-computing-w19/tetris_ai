@@ -47,7 +47,7 @@ class Tile:
 
 class Tetris:
 
-    def __init__(self, numRows=20, numColumns=10, numColors=0):
+    def __init__(self, numRows=20, numColumns=10, numColors=1):
         self.grid = [[Tile() for j in range(numColumns)] for i in range(numRows)]
         self.numColors = numColors
 

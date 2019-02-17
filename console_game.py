@@ -9,7 +9,8 @@ def display(game, window):
     for row in game.grid:
         window.addstr(" |")
         for tile in row:
-            window.addstr("[]" if tile.state else "  ")
+            window.addstr(str(tile.state) + " ")
+            #window.addstr("[]" if tile.state else "  ")
         window.addstr("|\n")
     window.addstr(" |" + ("--" * len(game.grid[0])) + "|\n")
     window.addstr("\n  " + "".join([("[]" if (-1, i, False) in game.PIECES[game.next-1] or (-1, i, True) in game.PIECES[game.next-1] else "  ") for i in range(3, 7)]) + " turns: " + str(game.numTurns))
@@ -46,7 +47,7 @@ def loadScreen(window):
 
 def playScreen(window):
     # Play screen:
-    game = Tetris(30, 15)
+    game = Tetris(20, 10)
     display(game, window)
     counter = time.time()
     delay = 1; acceleration = 1

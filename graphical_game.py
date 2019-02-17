@@ -182,10 +182,6 @@ def handleInput(game, pressedKeys, numTicks):
             if event.key == pygame.K_5: game.setNextPiece(5)
             if event.key == pygame.K_6: game.setNextPiece(6)
             if event.key == pygame.K_7: game.setNextPiece(7)
-            if event.key == pygame.K_8: game.setNextPiece(8)
-            if event.key == pygame.K_9: game.setNextPiece(9)
-            if event.key == pygame.K_q: game.setNextPiece(10)
-            if event.key == pygame.K_w: game.setNextPiece(11)
             render(game)
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_UP:
