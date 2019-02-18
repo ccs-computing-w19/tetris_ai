@@ -8,8 +8,7 @@ def findPath(board, position, target, rotatable):
     visited = []
     #display(board, target)
     #fixing bugs:
-    path = recFindPath(board, position, target, rotatable, visited)
-    return path if path != None else []
+    return recFindPath(board, position, target, rotatable, visited)
 
 def recFindPath(board, position, target, rotatable, visited, left=False, right=False, rotated=0):
     if comparePosition(position, target):
