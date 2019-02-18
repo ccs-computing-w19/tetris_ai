@@ -5,7 +5,6 @@ The user is given a 4x4 grid to draw their own enominoes (tetris pieces of n blo
 This gives the following 11 enomino possibilities (4 more than normal tetris):
 [to be added]
 
-
 The AI will play tetris using the user-inputted pieces or the user can play themself.
 
 GAMEPLAY:
@@ -21,3 +20,5 @@ RULES:
 3. whenever a row is filled with enomino pieces, it "clears" (disappears) and all ground enominoes above the row fall down one row
 4. score is calculated by number of rows cleared, combos, etc
 5. game is over when enominoes overflow the top row
+
+To run: `$ python3 graphical_game.py --silent`

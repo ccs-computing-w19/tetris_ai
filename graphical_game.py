@@ -118,16 +118,18 @@ import copy
 from ai.utils.utils import getActivePosition, findPositions
 from ai.utils.pathfinding import findPath
 from ai.utils.display import display
-from ai.neighborAi import choosePosition
+from ai.holyNeighborAi import choosePosition
 def ai(game, moves, numPieces):
     if game.numPieces > numPieces:
         position = getActivePosition(game.getBoard(), game.pivot)
         positions = findPositions(game.getBoard(), position, game.rotatable)
         path = None
         while path == None:
+            # someday get around to fixing this stupid bug:
             if len(positions) < 1:
                 display(game.getBoard(), position, False)
                 print("ERROR: COULDN'T FIND ANY VALID POSITIONS")
+                path = [] # set path to empty to deal with error
             target = choosePosition(game.getBoard(), positions)
             path = findPath(game.getBoard(), position, target, game.rotatable)
         moves = path

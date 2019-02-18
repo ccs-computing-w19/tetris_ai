@@ -1,6 +1,13 @@
 from random import choice, randint
 import copy
 
+#
+# This file contains the Tile and Tetris classes, which are used
+# for a fast implementation of the Tetris game in python
+#
+# The Tile class does not need to be used outside of this file
+#
+
 class Tile:
 
     def __init__(self, state=0, color=0, pivot=False):
@@ -76,43 +83,14 @@ class Tetris:
                 if self.grid[i][j].updated: self.grid[i][j].update()
     
     PIECES = [
-        [(0, 0, False), (0, 1, True), (0, 2, False), (0, 3, False)],
-        # x*xx
-        # ....
-        [(1, 0, False), (1, 1, True), (1, 2, False), (0, 1, False)],
-        # .x..
-        # x*x.
-        [(0, 1, False), (0, 2, True), (0, 3, False), (1, 1, False)],
-        # .x*x
-        # .x..
-        [(0, 0, False), (0, 1, True), (0, 2, False), (1, 2, False)],
-        # x*x.
-        # ..x.
-        [(0, 1, False), (0, 2, False), (1, 1, False), (1, 2, False)],
-        # .xx.
-        # .xx.
-        [(0, 0, False), (0, 1, False), (1, 1, True), (1, 2, False)],
-        # xx..
-        # .*x.
-        [(0, 2, False), (0, 3, False), (1, 1, False), (1, 2, True)],
-        # ..xx
-        # .x*.
+        [(0, 0, False), (0, 1, True), (0, 2, False), (0, 3, False)], # Long bar
+        [(1, 0, False), (1, 1, True), (1, 2, False), (0, 1, False)], # T piece
+        [(0, 1, False), (0, 2, True), (0, 3, False), (1, 1, False)], # L piece
+        [(0, 0, False), (0, 1, True), (0, 2, False), (1, 2, False)], # J piece
+        [(0, 1, False), (0, 2, False), (1, 1, False), (1, 2, False)], # Square piece
+        [(0, 0, False), (0, 1, False), (1, 1, True), (1, 2, False)], # Z piece
+        [(0, 2, False), (0, 3, False), (1, 1, False), (1, 2, True)], # S piece
     ]
-
-    """
-        [(0, 1, False), (1, 1, True), (1, 2, False)],
-        # .x..
-        # .*x.
-        [(0, 0, False), (0, 1, True), (0, 2, False)],
-        # x*x.
-        # ....
-        [(0, 1, True), (0, 2, False)],
-        # .*x.
-        # ....
-        [(0, 1, False)],
-        # .x..
-        # ....
-    """
 
     def randomPiece(self):
         return randint(1, len(self.PIECES))
