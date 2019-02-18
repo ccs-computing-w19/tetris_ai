@@ -5,21 +5,17 @@ import pygame, sys
 from math import pi, sin
 import random
 
-import progressbar
-
 MAXCOLORS = 1
-N = 100
+N = 10
 
 def main():
-    # progress bar:
-    bar = progressbar.ProgressBar(maxval=N, widgets=[progressbar.Bar('=', '[', ']'), ' ', progressbar.Percentage()])
-    bar.start()
-    sumLines = 0
+    avg = 0
     for i in range(N):
-        bar.update(i)
-        sumLines += playGame()
-    bar.update(N)
-    print("AI Ability:", sumLines / N)
+        p = playGame()
+        print(f"{i}: {p}")
+        avg += p
+    print(f"Average: {avg / N}")
+    
 
 def playGame():
     game = tetris.Tetris(numColors=MAXCOLORS)
@@ -35,22 +31,22 @@ def playGame():
     return game.numLines
 
 
-import copy
 from ai.utils.utils import getActivePosition, findPositions
 from ai.utils.pathfinding import findPath
 from ai.utils.display import display
 from ai.holyNeighborAi import choosePosition
 def ai(game, moves, numPieces):
     if game.numPieces > numPieces:
-        position = getActivePosition(game.getBoard(), game.pivot)
-        positions = findPositions(game.getBoard(), position, game.rotatable)
+        board = game.getBoard()
+        position = getActivePosition(board, game.pivot)
+        positions = findPositions(board, position, game.rotatable)
         path = None
-        while path == None: # find non-null path
+        while path == None:
+            # someday get around to fixing this stupid bug:
             if len(positions) < 1:
-                display(game.getBoard(), position, False)
-                print("ERROR: COULDN'T FIND ANY VALID POSITIONS")
-            target = choosePosition(game.getBoard(), positions)
-            path = findPath(game.getBoard(), position, target, game.rotatable)
+                path = []; break # set path to empty to deal with error
+            target = choosePosition(board, positions)
+            path = findPath(board, position, target, game.rotatable)
         moves = path
         numPieces += 1
     # Essentially, handle input:

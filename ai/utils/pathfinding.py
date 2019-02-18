@@ -7,6 +7,7 @@ from ai.utils.utils import *
 def findPath(board, position, target, rotatable):
     visited = []
     #display(board, target)
+    #fixing bugs:
     return recFindPath(board, position, target, rotatable, visited)
 
 def recFindPath(board, position, target, rotatable, visited, left=False, right=False, rotated=0):

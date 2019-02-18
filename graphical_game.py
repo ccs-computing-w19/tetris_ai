@@ -93,7 +93,7 @@ def playGame():
 
     pressedKeys = [-1, -1, -1, -1] # up, down, left, right
     while not game.lost: # game loop ends when game is lost
-
+        
         if INPUT: handleInput(game, pressedKeys, numTicks)
         else:
             for event in pygame.event.get(): # event handling loop
@@ -114,22 +114,24 @@ def playGame():
         timeSinceIncrement += 1
 
 
-import copy
 from ai.utils.utils import getActivePosition, findPositions
 from ai.utils.pathfinding import findPath
 from ai.utils.display import display
 from ai.heightAi import choosePosition
 def ai(game, moves, numPieces):
     if game.numPieces > numPieces:
-        position = getActivePosition(game.getBoard(), game.pivot)
-        positions = findPositions(game.getBoard(), position, game.rotatable)
+        board = game.getBoard()
+        position = getActivePosition(board, game.pivot)
+        positions = findPositions(board, position, game.rotatable)
         path = None
         while path == None:
+            # someday get around to fixing this stupid bug:
             if len(positions) < 1:
-                display(game.getBoard(), position, False)
+                display(board, position, False)
                 print("ERROR: COULDN'T FIND ANY VALID POSITIONS")
-            target = choosePosition(game.getBoard(), positions)
-            path = findPath(game.getBoard(), position, target, game.rotatable)
+                path = []; break # set path to empty to deal with error
+            target = choosePosition(board, positions)
+            path = findPath(board, position, target, game.rotatable)
         moves = path
         numPieces += 1
     # Essentially, handle input:

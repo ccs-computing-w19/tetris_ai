@@ -4,15 +4,16 @@ from random import randint
 from tetris import Tetris
 
 def display(game, window):
+    board = game.getBoard()
     window.clear()
-    window.addstr("\n |" + ("--" * len(game.grid[0])) + "|\n")
-    for row in game.grid:
+    window.addstr("\n |" + ("--" * len(board[0])) + "|\n")
+    for row in board:
         window.addstr(" |")
         for tile in row:
             window.addstr(str(tile.state) + " ")
             #window.addstr("[]" if tile.state else "  ")
         window.addstr("|\n")
-    window.addstr(" |" + ("--" * len(game.grid[0])) + "|\n")
+    window.addstr(" |" + ("--" * len(board[0])) + "|\n")
     window.addstr("\n  " + "".join([("[]" if (-1, i, False) in game.PIECES[game.next-1] or (-1, i, True) in game.PIECES[game.next-1] else "  ") for i in range(3, 7)]) + " turns: " + str(game.numTurns))
     window.addstr("\n  " + "".join([("[]" if (0, i, False) in game.PIECES[game.next-1] or (0, i, True) in game.PIECES[game.next-1] else "  ") for i in range(3, 7)]) + " lost: " + str(game.lost))
     window.addstr("\n  " + "".join([("[]" if (1, i, False) in game.PIECES[game.next-1] or (1, i, True) in game.PIECES[game.next-1] else "  ") for i in range(3, 7)]) + " clears: " + str(game.numLines))
