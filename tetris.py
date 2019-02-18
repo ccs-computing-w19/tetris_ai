@@ -127,7 +127,6 @@ class Tetris:
             self.next = self.randomPiece()
         self.nextColor = self.randomColor()
         
-
     # Rotates the active block clockwise
     def rotateActiveClockwise(self):
         if self.rotatable(): #if there is a pivot
@@ -269,6 +268,7 @@ class Tetris:
                 self.grid[0] = [Tile() for j in range(len(self.grid[0]))]
                 self.numLines += 1
 
+    # I know it's not a copy, but deepcopy is too slow, so just don't touch it
     def getBoard(self):
-        return copy.copy(self.grid)
+        return self.grid
 
