@@ -56,6 +56,9 @@ class Tetris:
         self.numLines = 0
         self.numPieces = 0
 
+        # for optimization: (minX, minY, maxX, maxY)
+        self.pieceBounds = [len(self.grid), len(self.grid[0]), -1, -1]
+
         self.next = self.randomPiece()
         self.BASECOLOR = randint(1, 360)
         self.nextColor = self.randomColor()
@@ -118,6 +121,7 @@ class Tetris:
         #return randint(1, self.numColors)
         return ((self.numPieces * 133) + self.BASECOLOR + (self.numTurns % 30)) % self.numColors + 1
 
+    # starts/ends autochoice
     def setNextPiece(self, piece):
         if piece == 0:
             self.autoChoice = True
@@ -129,10 +133,17 @@ class Tetris:
     # Creates a new piece at the top of the board
     def generateNewPiece(self):
         offset = len(self.grid[0]) // 2 - 2
+        # reset pieceBounds:
+        self.pieceBounds = [len(self.grid), len(self.grid[0]), -1, -1]
         for loc in self.PIECES[self.next - 1]: # subtract 1 for zero-indexing
             if self.grid[loc[0]][loc[1] + offset].isInactive(): self.lost = True # losing the game
             self.grid[loc[0]][loc[1] + offset] = Tile(state=2, pivot=loc[2], color=self.nextColor)
             if loc[2]: self.pivot = (loc[0], loc[1] + offset)
+            # update pieceBounds:
+            if loc[0] < self.pieceBounds[0]: self.pieceBounds[0] = loc[0]
+            if loc[1] + offset < self.pieceBounds[1]: self.pieceBounds[1] = loc[1] + offset
+            if loc[0] > self.pieceBounds[2]: self.pieceBounds[2] = loc[0]
+            if loc[1] + offset > self.pieceBounds[3]: self.pieceBounds[3] = loc[1] + offset
         self.numPieces += 1 # update number of pieces
         if self.autoChoice:
             self.next = self.randomPiece()
@@ -143,8 +154,8 @@ class Tetris:
     def rotateActiveClockwise(self):
         if self.rotatable(): #if there is a pivot
             error = False
-            for i in range(len(self.grid)):
-                for j in range(len(self.grid[i])):
+            for i in range(self.pieceBounds[0], self.pieceBounds[2] + 1):
+                for j in range(self.pieceBounds[1], self.pieceBounds[3] + 1):
                     if self.grid[i][j].isActive():
                         if self.pivot[0] + j - self.pivot[1] > len(self.grid) - 1 or self.pivot[1] + self.pivot[0] - i > len(self.grid[0]) - 1 or self.pivot[0] + j - self.pivot[1] < 0 or self.pivot[1] + self.pivot[0] - i < 0 or self.grid[self.pivot[0] + j - self.pivot[1]][self.pivot[1] + self.pivot[0] - i].isInactive():
                             error = True; break
@@ -152,19 +163,24 @@ class Tetris:
                     continue
                 break
             if not error:
-                for i in range(len(self.grid)):
-                    for j in range(len(self.grid[i])):
+                for i in range(self.pieceBounds[0], self.pieceBounds[2] + 1):
+                    for j in range(self.pieceBounds[1], self.pieceBounds[3] + 1):
                         if self.grid[i][j].isActive():
                             self.grid[self.pivot[0] + j - self.pivot[1]][self.pivot[1] + self.pivot[0] - i].copy(self.grid[i][j])
                             if not self.grid[i][j].updated: self.grid[i][j].reset()
+                # update pieceBounds:
+                newVerticalBound = (self.pivot[0] + self.pieceBounds[1] - self.pivot[1], self.pivot[0] + self.pieceBounds[3] - self.pivot[1])
+                newHorizontalBound = (self.pivot[1] + self.pivot[0] - self.pieceBounds[0], self.pivot[1] + self.pivot[0] - self.pieceBounds[2])
+                self.pieceBounds[0], self.pieceBounds[1] = min(newVerticalBound), min(newHorizontalBound)
+                self.pieceBounds[2], self.pieceBounds[3] = max(newVerticalBound), max(newHorizontalBound)
                 self.updateBoard()
     
     # Rotates the active block counterclockwise
     def rotateActiveCounterclockwise(self):
         if self.rotatable(): #if there is a pivot
             error = False
-            for i in range(len(self.grid)):
-                for j in range(len(self.grid[i])):
+            for i in range(self.pieceBounds[0], self.pieceBounds[2] + 1):
+                for j in range(self.pieceBounds[1], self.pieceBounds[3] + 1):
                     if self.grid[i][j].isActive():
                         if self.pivot[0] + self.pivot[1] - j > len(self.grid) - 1 or i + self.pivot[1] - self.pivot[0] > len(self.grid[0]) - 1 or self.pivot[0] + self.pivot[1] - j < 0 or i + self.pivot[1] - self.pivot[0] < 0 or self.grid[self.pivot[0] + self.pivot[1] - j][i + self.pivot[1] - self.pivot[0]].isInactive():
                             error = True; break
@@ -172,73 +188,81 @@ class Tetris:
                     continue
                 break
             if not error:
-                for i in range(len(self.grid)):
-                    for j in range(len(self.grid[i])):
+                for i in range(self.pieceBounds[0], self.pieceBounds[2] + 1):
+                    for j in range(self.pieceBounds[1], self.pieceBounds[3] + 1):
                         if self.grid[i][j].isActive():
                             self.grid[self.pivot[0] + self.pivot[1] - j][i + self.pivot[1] - self.pivot[0]].copy(self.grid[i][j])
                             if not self.grid[i][j].updated: self.grid[i][j].reset()
+                # update pieceBounds:
+                newVerticalBound = (self.pivot[0] + self.pivot[1] - self.pieceBounds[1], self.pivot[0] + self.pivot[1] - self.pieceBounds[3])
+                newHorizontalBound = (self.pieceBounds[0] + self.pivot[1] - self.pivot[0], self.pieceBounds[2] + self.pivot[1] - self.pivot[0])
+                self.pieceBounds[0], self.pieceBounds[1] = min(newVerticalBound), min(newHorizontalBound)
+                self.pieceBounds[2], self.pieceBounds[3] = max(newVerticalBound), max(newHorizontalBound)
                 self.updateBoard()
     
     # Moves the active block left
     def translateActiveLeft(self):
         onLeft = False
-        for i in range(len(self.grid)):
-            for j in range(len(self.grid[i])):
+        for i in range(self.pieceBounds[0], self.pieceBounds[2] + 1):
+            for j in range(self.pieceBounds[1], self.pieceBounds[3] + 1):
                 if self.grid[i][j].isActive():
                     if j == 0 or self.grid[i][j-1].isInactive(): onLeft = True; break
             else:
                 continue
             break
         if not onLeft:
-            for i in range(len(self.grid)):
-                for j in range(len(self.grid[i])):
+            for i in range(self.pieceBounds[0], self.pieceBounds[2] + 1):
+                for j in range(self.pieceBounds[1], self.pieceBounds[3] + 1):
                     if self.grid[i][j].isActive():
                         self.grid[i][j-1].copy(self.grid[i][j])
                         if not self.grid[i][j].updated: self.grid[i][j].reset()
             if self.rotatable(): self.pivot = (self.pivot[0], self.pivot[1] - 1) #update pivot flag
+            self.pieceBounds[1] -= 1; self.pieceBounds[3] -= 1 # update pieceBounds:
             self.updateBoard()
 
     # Moves the active block right
     def translateActiveRight(self):
         onRight = False
-        for i in range(len(self.grid)):
-            for j in range(len(self.grid[i])):
+        for i in range(self.pieceBounds[0], self.pieceBounds[2] + 1):
+            for j in range(self.pieceBounds[1], self.pieceBounds[3] + 1):
                 if self.grid[i][j].isActive():
                     if j == len(self.grid[0]) - 1 or self.grid[i][j+1].isInactive(): onRight = True; break
             else:
                 continue
             break
         if not onRight:
-            for i in range(len(self.grid)):
-                for j in range(len(self.grid[i])):
+            for i in range(self.pieceBounds[0], self.pieceBounds[2] + 1):
+                for j in range(self.pieceBounds[1], self.pieceBounds[3] + 1):
                     if self.grid[i][j].isActive():
                         self.grid[i][j+1].copy(self.grid[i][j])
                         if not self.grid[i][j].updated: self.grid[i][j].reset()
             if self.rotatable(): self.pivot = (self.pivot[0], self.pivot[1] + 1) #update pivot flag
+            self.pieceBounds[1] += 1; self.pieceBounds[3] += 1 # update pieceBounds:
             self.updateBoard()
 
     # Shifts blocks down and generates new block if necessary
     def incrementTime(self):
         onBottom = False
-        for i in range(len(self.grid)):
-            for j in range(len(self.grid[i])):
+        for i in range(self.pieceBounds[0], self.pieceBounds[2] + 1):
+            for j in range(self.pieceBounds[1], self.pieceBounds[3] + 1):
                 if self.grid[i][j].isActive():
                     if i == len(self.grid) - 1 or self.grid[i+1][j].isInactive(): onBottom = True; break
             else:
                 continue
             break
         if onBottom:
-            for i in range(len(self.grid)):
-                for j in range(len(self.grid[i])):
+            for i in range(self.pieceBounds[0], self.pieceBounds[2] + 1):
+                for j in range(self.pieceBounds[1], self.pieceBounds[3] + 1):
                     if self.grid[i][j].isActive():
                         self.grid[i][j].deactivate()
         else:
-            for i in range(len(self.grid)):
-                for j in range(len(self.grid[i])):
+            for i in range(self.pieceBounds[0], self.pieceBounds[2] + 1):
+                for j in range(self.pieceBounds[1], self.pieceBounds[3] + 1):
                     if self.grid[i][j].isActive():
                         self.grid[i+1][j].copy(self.grid[i][j])
                         if not self.grid[i][j].updated: self.grid[i][j].reset()
             if self.rotatable(): self.pivot = (self.pivot[0] + 1, self.pivot[1]) #update pivot flag
+            self.pieceBounds[0] += 1; self.pieceBounds[2] += 1 # update pieceBounds:
         self.numTurns += 1
         self.updateBoard()
         if onBottom:
@@ -257,7 +281,7 @@ class Tetris:
 
     # Clears any lines that are full
     def lineClear(self):
-        for i in range(len(self.grid)):
+        for i in range(self.pieceBounds[0], self.pieceBounds[2] + 1):
             rowIsFull = True
             for j in range(len(self.grid[i])):
                 if not self.grid[i][j].isInactive(): rowIsFull = False; break

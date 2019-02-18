@@ -93,7 +93,7 @@ def playGame():
 
     pressedKeys = [-1, -1, -1, -1] # up, down, left, right
     while not game.lost: # game loop ends when game is lost
-
+        
         if INPUT: handleInput(game, pressedKeys, numTicks)
         else:
             for event in pygame.event.get(): # event handling loop
@@ -118,7 +118,7 @@ import copy
 from ai.utils.utils import getActivePosition, findPositions
 from ai.utils.pathfinding import findPath
 from ai.utils.display import display
-from ai.heightAi import choosePosition
+from ai.neighborAi import choosePosition
 def ai(game, moves, numPieces):
     if game.numPieces > numPieces:
         position = getActivePosition(game.getBoard(), game.pivot)
