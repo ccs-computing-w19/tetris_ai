@@ -1,5 +1,4 @@
-from random import choice, randint
-import copy
+import random, copy, time
 
 #
 # This file contains the Tile and Tetris classes, which are used
@@ -54,9 +53,11 @@ class Tile:
 
 class Tetris:
 
-    def __init__(self, numRows=20, numColumns=10, numColors=1):
+    def __init__(self, numRows=20, numColumns=10, numColors=1, seed=None):
         self.grid = [[Tile() for j in range(numColumns)] for i in range(numRows)]
         self.numColors = numColors
+        self.seed = seed
+        if self.seed != None: random.seed(seed)
 
         self.lost = False
         self.numTurns = 0
@@ -67,7 +68,7 @@ class Tetris:
         self.pieceBounds = [len(self.grid), len(self.grid[0]), -1, -1]
 
         self.next = self.randomPiece()
-        self.BASECOLOR = randint(1, 360)
+        self.BASECOLOR = random.randint(1, 360)
         self.nextColor = self.randomColor()
         self.autoChoice = True
         self.pivot = (-1, -1) # flag that stores the pivot
@@ -93,10 +94,11 @@ class Tetris:
     ]
 
     def randomPiece(self):
-        return randint(1, len(self.PIECES))
+        if self.seed != None: self.seed += 1; random.seed(self.seed)
+        return random.randint(1, len(self.PIECES))
 
     def randomColor(self):
-        #return randint(1, self.numColors)
+        #return random.randint(1, self.numColors)
         return ((self.numPieces * 133) + self.BASECOLOR + (self.numTurns % 30)) % self.numColors + 1
 
     # starts/ends autochoice

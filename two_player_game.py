@@ -6,7 +6,7 @@ from math import pi, sin
 import random
 
 FPS = 60
-WINDOWWIDTH = 480
+WINDOWWIDTH = 960
 WINDOWHEIGHT = 600
 
 # DEFINE COLOR CONSTANTS:
@@ -20,14 +20,7 @@ LIGHTBLANKCOLOR = (222, 236, 248)
 CANVASCOLOR = (180, 170, 170)
 BUTTONCOLOR = (100, 100, 200)
 
-INPUT = True
 DELAY = 15 # delay between each incrementTime
-
-
-def switchToAI():
-    global INPUT, DELAY
-    INPUT = False; DELAY = 0.1
-
 
 def main():
     global FPSCLOCK, DISPLAYSURF, BASICFONT, BIGFONT
@@ -47,20 +40,17 @@ def main():
 
     playStartMenu()
     while True:
-        playGame()
-        playEndMenu()
+        response = playGame()
+        playEndMenu(response)
 
 
 def playStartMenu():
     DISPLAYSURF.fill(BGCOLOR)
-
+    
     text = "Enomino"
-    # Draw the text drop shadow
     drawText(text, BIGFONT, TEXTSHADOWCOLOR, (int(WINDOWWIDTH / 2), int(WINDOWHEIGHT / 2) - 30), True)
-
-    # Draw the text
     drawText(text, BIGFONT, TEXTCOLOR, (int(WINDOWWIDTH / 2) - 3, int(WINDOWHEIGHT / 2) - 30 - 3), True)
-
+    
     # Draw the additional "Press a key to play." text.
     drawText("Press a key to play.", BASICFONT, TEXTCOLOR, (int(WINDOWWIDTH / 2), int(WINDOWHEIGHT / 2) + 30), True)
 
@@ -74,43 +64,36 @@ def playStartMenu():
         pygame.display.update()
         FPSCLOCK.tick()
 
-
 from ai.ai import AI
 def playGame():
-    game = tetris.Tetris(numColors=MAXCOLORS)
+    seed = 5
+    game = tetris.Tetris(numColors=MAXCOLORS, seed=seed)
+    aiGame = tetris.Tetris(numColors=MAXCOLORS, seed=seed)
     ai = AI()
-
-    # a dictionary of pygame buttons and their functions:
-    global AI_BUTTON
-    AI_BUTTON = pygame.Rect((WINDOWWIDTH - 122, 300, 50, 30))  # ai enable button
-
-    render(game)
+    render(game, aiGame)
 
     # loop count variables:
     numTicks = 0
     timeSinceIncrement = 0
 
     pressedKeys = [-1, -1, -1, -1] # up, down, left, right
-    while not game.lost: # game loop ends when game is lost
+    while not game.lost or aiGame.lost: # game loop ends when game is lost
         
-        if INPUT: handleInput(game, pressedKeys, numTicks)
-        else:
-            for event in pygame.event.get(): # event handling loop
-                if event.type == pygame.QUIT:
-                    terminate() # exit game
-        
-        # increment time (move blocks down)
+        updated = handleInput(game, pressedKeys, numTicks)
+        if updated:
+            render(game, aiGame)
         if timeSinceIncrement > DELAY: # number of ticks between time increments
-            
-            if not INPUT: ai.ai(game)
-            
+            ai.ai(aiGame)
             game.incrementTime()
+            aiGame.incrementTime()
             timeSinceIncrement = 0
-            render(game)
+            render(game, aiGame)
 
         FPSCLOCK.tick(FPS)
         numTicks += 1
         timeSinceIncrement += 1
+    
+    return "Game Over" if game.lost else "You Win!"
 
 """
 from ai.utils.utils import getActivePosition, findPositions
@@ -151,6 +134,7 @@ def ai(game, moves, numPieces):
 """
 
 def handleInput(game, pressedKeys, numTicks):
+    updated = False
     for event in pygame.event.get(): # event handling loop
         if event.type == pygame.QUIT:
             terminate() # exit game
@@ -173,8 +157,6 @@ def handleInput(game, pressedKeys, numTicks):
                 timeSinceIncrement = 0
             if event.key == pygame.K_z:
                 game.rotateActiveCounterclockwise()
-            if event.key == pygame.K_BACKQUOTE:
-                switchToAI()
             if event.key == pygame.K_0: game.setNextPiece(0)
             if event.key == pygame.K_1: game.setNextPiece(1)
             if event.key == pygame.K_2: game.setNextPiece(2)
@@ -183,7 +165,7 @@ def handleInput(game, pressedKeys, numTicks):
             if event.key == pygame.K_5: game.setNextPiece(5)
             if event.key == pygame.K_6: game.setNextPiece(6)
             if event.key == pygame.K_7: game.setNextPiece(7)
-            render(game)
+            updated = True
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_UP:
                 pressedKeys[0] = -1
@@ -193,38 +175,34 @@ def handleInput(game, pressedKeys, numTicks):
                 pressedKeys[2] = -1
             if event.key == pygame.K_RIGHT:
                 pressedKeys[3] = -1
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            mouse_pos = event.pos  # gets mouse position
-            if AI_BUTTON.collidepoint(mouse_pos):
-                switchToAI()
 
     # deal with held-down keys:
-    THRESHOLD = 5 # in ticks
-    for i in range(len(pressedKeys)):
-        pressedKeys[i] += 1 if pressedKeys[i] != -1 else 0
-    if pressedKeys[0] > THRESHOLD and numTicks % 2: # only every other tick
-        game.rotateActiveClockwise()
-        render(game)
-    if pressedKeys[1] > THRESHOLD and numTicks % 2:
-        game.incrementTime()
-        render(game)
-        timeSinceIncrement = 0
-    if pressedKeys[2] > THRESHOLD and numTicks % 2:
-        game.translateActiveLeft()
-        render(game)
-    if pressedKeys[3] > THRESHOLD and numTicks % 2:
-        game.translateActiveRight()
-        render(game)
+    if numTicks % 2:
+        THRESHOLD = 5 # in ticks
+        for i in range(len(pressedKeys)):
+            pressedKeys[i] += 1 if pressedKeys[i] != -1 else 0
+        if pressedKeys[0] > THRESHOLD: # only every other tick
+            game.rotateActiveClockwise()
+            updated = True
+        if pressedKeys[1] > THRESHOLD:
+            game.incrementTime()
+            updated = True
+            timeSinceIncrement = 0
+        if pressedKeys[2] > THRESHOLD:
+            game.translateActiveLeft()
+            updated = True
+        if pressedKeys[3] > THRESHOLD:
+            game.translateActiveRight()
+            updated = True
+    
+    return updated
 
 
-def playEndMenu():
+def playEndMenu(response):
     DISPLAYSURF.fill(BGCOLOR)
 
-    text = "Game Over"
-    # Draw the text drop shadow
+    text = response
     drawText(text, BIGFONT, TEXTSHADOWCOLOR, (int(WINDOWWIDTH / 2), int(WINDOWHEIGHT / 2) - 30), True)
-
-    # Draw the text
     drawText(text, BIGFONT, TEXTCOLOR, (int(WINDOWWIDTH / 2) - 3, int(WINDOWHEIGHT / 2) - 30 - 3), True)
 
     # Draw the additional "Press a key to play." text.
@@ -316,13 +294,14 @@ def drawNextPiece(piece, color, location):
     drawBoard(grid, (location[0], location[1] + 25))
 
 
-def render(game):
+def render(game, aiGame):
     DISPLAYSURF.fill(BGCOLOR)
     drawBoard(game.getBoard(), (50, 50))
-    drawNextPiece(game.PIECES[game.next - 1], game.nextColor, (WINDOWWIDTH - 150, 150))
-    drawStatus(game.numTurns, game.numLines, game.next, (WINDOWWIDTH - 150, 50))
-    pygame.draw.rect(DISPLAYSURF, BUTTONCOLOR, AI_BUTTON)  # draw button
-    drawText("AI", BASICFONT, TEXTCOLOR, (AI_BUTTON.x + AI_BUTTON.width / 2, AI_BUTTON.y + AI_BUTTON.height / 2), center=True)
+    drawBoard(aiGame.getBoard(), (WINDOWWIDTH/2 + 50, 50))
+    drawNextPiece(game.PIECES[game.next - 1], game.nextColor, (WINDOWWIDTH/2 - 150, 150))
+    drawNextPiece(aiGame.PIECES[aiGame.next - 1], aiGame.nextColor, (WINDOWWIDTH - 150, 150))
+    drawStatus(game.numTurns, game.numLines, game.next, (WINDOWWIDTH/2 - 150, 50))
+    drawStatus(aiGame.numTurns, aiGame.numLines, aiGame.next, (WINDOWWIDTH - 150, 50))
     pygame.display.update()
 
 
