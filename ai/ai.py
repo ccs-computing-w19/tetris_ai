@@ -1,7 +1,7 @@
 from ai.utils.utils import getActivePosition, findPositions
 from ai.utils.pathfinding import findPath
 from ai.utils.display import display
-from ai.neighborAi import choosePosition
+from ai.algorithms.holyNeighborAi import choosePosition
 
 class AI():
 
@@ -20,8 +20,6 @@ class AI():
             while path == None:
                 # someday get around to fixing this stupid bug:
                 if len(positions) < 1:
-                    display(board, position, False)
-                    print("ERROR: COULDN'T FIND ANY VALID POSITIONS")
                     path = []; break # set path to empty to deal with error
                 target = self.choosePosition(board, positions)
                 path = findPath(board, position, target, game.rotatable)
