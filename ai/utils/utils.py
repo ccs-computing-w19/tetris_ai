@@ -1,4 +1,5 @@
-import tetris, copy
+import tetris.tetris as tetris
+import copy
 
 #                               #
 #     UTILITIES FOR POINTS      #

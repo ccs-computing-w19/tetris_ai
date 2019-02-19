@@ -1,4 +1,3 @@
-import tetris
 from ai.utils.utils import *
 from ai.utils.pathfinding import findPath
 

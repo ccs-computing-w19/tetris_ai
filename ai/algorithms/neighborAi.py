@@ -1,4 +1,3 @@
-import tetris
 from ai.utils.utils import isOutOfBounds
 from ai.utils.pathfinding import findPath
 from ai.utils.display import display

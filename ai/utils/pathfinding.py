@@ -1,4 +1,4 @@
-import tetris
+import tetris.tetris as tetris
 from ai.utils.utils import *
 #from ai.utils.display import display
 
