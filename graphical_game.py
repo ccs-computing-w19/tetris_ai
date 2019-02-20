@@ -77,7 +77,7 @@ def playStartMenu():
 
 from ai.ai import AI
 def playGame():
-    game = Tetris(numColors=MAXCOLORS)
+    game = Tetris(numColors=MAXCOLORS, seed=3)
     ai = AI()
 
     # a dictionary of pygame buttons and their functions:
