@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
 from tetris.tetris import Tetris, Tile
-import pygame, sys
+import pygame, sys, random, time
 from math import pi, sin
-import random
 
 FPS = 60
 WINDOWWIDTH = 960
@@ -20,7 +19,7 @@ LIGHTBLANKCOLOR = (222, 236, 248)
 CANVASCOLOR = (180, 170, 170)
 BUTTONCOLOR = (100, 100, 200)
 
-DELAY = 15 # delay between each incrementTime
+DELAY = 20 # delay between each incrementTime
 
 def main():
     global FPSCLOCK, DISPLAYSURF, BASICFONT, BIGFONT
@@ -59,7 +58,7 @@ def playStartMenu():
 
 from ai.ai import AI
 def playGame():
-    seed = 5
+    seed = int(time.time())
     game = Tetris(numColors=MAXCOLORS, seed=seed)
     aiGame = Tetris(numColors=MAXCOLORS, seed=seed)
     ai = AI()
@@ -68,17 +67,19 @@ def playGame():
     # loop count variables:
     numTicks = 0
     timeSinceIncrement = 0
-
     pressedKeys = [-1, -1, -1, -1] # up, down, left, right
     while not game.lost or aiGame.lost: # game loop ends when game is lost
         
         updated = handleInput(game, pressedKeys, numTicks)
+        while aiGame.numTurns < game.numTurns:
+            ai.ai(aiGame)
+            aiGame.incrementTime()
+            if game.numTurns - aiGame.numTurns % 10 == 0 or game.numTurns - aiGame.numTurns % 5 < 10:
+                render(game, aiGame)
         if updated:
             render(game, aiGame)
         if timeSinceIncrement > DELAY: # number of ticks between time increments
-            ai.ai(aiGame)
             game.incrementTime()
-            aiGame.incrementTime()
             timeSinceIncrement = 0
             render(game, aiGame)
 
@@ -182,21 +183,15 @@ def terminate():
 def drawText(text, font, color, location, center=False):
     textSurf = font.render(text, True, color)
     textRect = textSurf.get_rect()
-    if center:
-        textRect.center = location
-    else:
-        textRect.topleft = location
+    if center: textRect.center = location
+    else: textRect.topleft = location
     DISPLAYSURF.blit(textSurf, textRect)
 
 
 def drawStatus(score, level, piece, location):
-    # draw the score text
+    #pygame.draw.rect(DISPLAYSURF, BGCOLOR, pygame.Rect(location + (100, 100)))
     drawText("Score: %s" % score, BASICFONT, TEXTCOLOR, location)
-
-    # draw the level text
     drawText("Level: %s" % level, BASICFONT, TEXTCOLOR, (location[0], location[1] + 30))
-
-    # draw the next piece indicator
     drawText("Piece: %s" % piece, BASICFONT, TEXTCOLOR, (location[0], location[1] + 60))
 
 
@@ -219,10 +214,8 @@ def drawBoard(board, location):
     BORDER = 5 # border size
     BOXSIZE = 25 # size of tiles
 
-    # draw the border around the board
+    # draw the border and box
     pygame.draw.rect(DISPLAYSURF, BORDERCOLOR, (location[0], location[1], (len(board[0]) * BOXSIZE + BORDER), (len(board) * BOXSIZE + BORDER)), BORDER)
-
-    # fill the background of the board
     pygame.draw.rect(DISPLAYSURF, CANVASCOLOR, (location[0] + BORDER // 2, location[1] + BORDER // 2, BOXSIZE * len(board[0]), BOXSIZE * len(board)))
 
     # draw the individual boxes on the board
@@ -236,21 +229,20 @@ def drawBoard(board, location):
 
 def drawNextPiece(piece, color, location):
     DIMENSIONS = (4, 4)
-
-    # draw "next:" text
+    #pygame.draw.rect(DISPLAYSURF, BGCOLOR, pygame.Rect(location + (100, 100)))
     drawText("Next: ", BASICFONT, TEXTCOLOR, location)
-
-    # build grid structure
+    
+    # draw 'little board'
     grid = [[Tile() for j in range(DIMENSIONS[0])] for i in range(DIMENSIONS[1])]
     for loc in piece:
         grid[loc[0] + 1][loc[1]] = Tile(state=2, pivot=loc[2], color=color) # 1 is the vertical offset
-    
-    # draw "board"
     drawBoard(grid, (location[0], location[1] + 25))
 
 
 def render(game, aiGame):
     DISPLAYSURF.fill(BGCOLOR)
+    drawText("Player (you):", BASICFONT, TEXTCOLOR, (50, 10), center=False)
+    drawText("AI (them):", BASICFONT, TEXTCOLOR, (WINDOWWIDTH + 50, 10), center=False)
     drawBoard(game.getBoard(), (50, 50))
     drawBoard(aiGame.getBoard(), (WINDOWWIDTH/2 + 50, 50))
     drawNextPiece(game.PIECES[game.next - 1], game.nextColor, (WINDOWWIDTH/2 - 150, 150))

@@ -26,7 +26,7 @@ DELAY = 15 # delay between each incrementTime
 
 def switchToAI():
     global INPUT, DELAY
-    INPUT = False; DELAY = 0.1
+    INPUT = False; DELAY = 0.01
 
 
 def main():
@@ -84,7 +84,7 @@ def playGame():
     global AI_BUTTON
     AI_BUTTON = pygame.Rect((WINDOWWIDTH - 122, 300, 50, 30))  # ai enable button
 
-    render(game)
+    render(game, fill=True)
 
     # loop count variables:
     numTicks = 0
@@ -213,21 +213,15 @@ def terminate():
 def drawText(text, font, color, location, center=False):
     textSurf = font.render(text, True, color)
     textRect = textSurf.get_rect()
-    if center:
-        textRect.center = location
-    else:
-        textRect.topleft = location
+    if center: textRect.center = location
+    else: textRect.topleft = location
     DISPLAYSURF.blit(textSurf, textRect)
 
 
 def drawStatus(score, level, piece, location):
-    # draw the score text
+    pygame.draw.rect(DISPLAYSURF, BGCOLOR, pygame.Rect(location + (100, 100)))
     drawText("Score: %s" % score, BASICFONT, TEXTCOLOR, location)
-
-    # draw the level text
     drawText("Level: %s" % level, BASICFONT, TEXTCOLOR, (location[0], location[1] + 30))
-
-    # draw the next piece indicator
     drawText("Piece: %s" % piece, BASICFONT, TEXTCOLOR, (location[0], location[1] + 60))
 
 
@@ -250,13 +244,12 @@ def drawBoard(board, location):
     BORDER = 5 # border size
     BOXSIZE = 25 # size of tiles
 
-    # draw the border around the board
+    # draw the border and box
     pygame.draw.rect(DISPLAYSURF, BORDERCOLOR, (location[0], location[1], (len(board[0]) * BOXSIZE + BORDER), (len(board) * BOXSIZE + BORDER)), BORDER)
-
-    # fill the background of the board
     pygame.draw.rect(DISPLAYSURF, CANVASCOLOR, (location[0] + BORDER // 2, location[1] + BORDER // 2, BOXSIZE * len(board[0]), BOXSIZE * len(board)))
 
     # draw the individual boxes on the board
+    
     for y in range(len(board)):
         for x in range(len(board[y])):
             pixelx = location[0] + BORDER // 2 + (x * BOXSIZE)
@@ -264,33 +257,25 @@ def drawBoard(board, location):
             pygame.draw.rect(DISPLAYSURF, getColorFromNumber(board[y][x].color) if board[y][x].color != 0 else LIGHTBLANKCOLOR, (pixelx + 1, pixely + 1, BOXSIZE - 1, BOXSIZE - 1))
             pygame.draw.rect(DISPLAYSURF, getLightFromNumber(board[y][x].color) if board[y][x].color != 0 else LIGHTBLANKCOLOR, (pixelx + 1, pixely + 1, BOXSIZE - 4, BOXSIZE - 4))
 
-
 def drawNextPiece(piece, color, location):
     DIMENSIONS = (4, 4)
-
-    # draw "next:" text
+    pygame.draw.rect(DISPLAYSURF, BGCOLOR, pygame.Rect(location + (100, 100)))
     drawText("Next: ", BASICFONT, TEXTCOLOR, location)
-
-    # build grid structure
+    
+    # draw 'little board'
     grid = [[Tile() for j in range(DIMENSIONS[0])] for i in range(DIMENSIONS[1])]
     for loc in piece:
         grid[loc[0] + 1][loc[1]] = Tile(state=2, pivot=loc[2], color=color) # 1 is the vertical offset
-    
-    # draw "board"
     drawBoard(grid, (location[0], location[1] + 25))
 
-
-def render(game):
-    DISPLAYSURF.fill(BGCOLOR)
+def render(game, fill=False):
+    if fill: DISPLAYSURF.fill(BGCOLOR)
     drawBoard(game.getBoard(), (50, 50))
     drawNextPiece(game.PIECES[game.next - 1], game.nextColor, (WINDOWWIDTH - 150, 150))
     drawStatus(game.numTurns, game.numLines, game.next, (WINDOWWIDTH - 150, 50))
     pygame.draw.rect(DISPLAYSURF, BUTTONCOLOR, AI_BUTTON)  # draw button
     drawText("AI", BASICFONT, TEXTCOLOR, (AI_BUTTON.x + AI_BUTTON.width / 2, AI_BUTTON.y + AI_BUTTON.height / 2), center=True)
     pygame.display.update()
-
-
-
 
 if __name__ == "__main__":
     print("Use --silent for mute")
