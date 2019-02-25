@@ -22,7 +22,7 @@ from ai.utils.display import display
 
 #need to implement:
 #get score from end of a game
-#
+#make the ai play the game
 
 CHANCEOFSURVIVAL = 0.2
 CHANCEOFMUTATE = 0.25
@@ -38,19 +38,25 @@ class player:
 		wNeighbors = random.uniform(-5, 5)
 		wHoles = random.uniform(-5, 5)
 
-	def findHeight(self, position):
+	def findHeight(self, position, board):
 		pass
 
-	def numOfNeighbors(self, position):
+	def numOfNeighbors(self, position, board):
 		pass
 
-	def numOfHoles(self, position):
+	def numOfHoles(self, position, board):
 		pass
 
-	def chooseMove(self, positions):
+	def chooseMove(self, positions, board):
 		positionScores = []
 		for pos in positions:
-			positionScores.append(wHeight * findHeight(pos) + wNeighbors * numOfNeighbors(pos) + wHoles * numOfHoles(pos))
+			positionScores.append(wHeight * findHeight(pos, board) + wNeighbors * numOfNeighbors(pos, board) + wHoles * numOfHoles(pos, board))
+		bestPosScore = max(positionScores)
+		numOfPositions = len(positions)
+		for i in range(numOfPositions):
+			if(positionScores[i] == bestPosScore):
+				bestPos = positions[i]
+		return bestPos
 
 def create_initial_population(count):
 	#creates a population of players with random genomes
