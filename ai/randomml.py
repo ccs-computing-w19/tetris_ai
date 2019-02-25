@@ -26,6 +26,8 @@ from ai.utils.display import display
 
 CHANCEOFSURVIVAL = 0.2
 CHANCEOFMUTATE = 0.25
+INITIALPOP = 30
+DESIREDSCORE = 20
 
 class player:
 	def __init__(self, weights = [0, 0, 0]):
@@ -123,3 +125,26 @@ def evolve(pop):
 		newGen.append(breed(p1, p2))
 
 	return newGen
+
+def train(pop):
+	#each player plays the game until death
+	#if any player plays well enough (> DESIREDSCORE), then return tuple (score, player)
+	#otherwise, evolve them and return highest score and new generation (highest score, new gen)
+	pass
+
+def save(player):
+	#copy down parameters to file
+	pass
+
+def main():
+	pop = create_initial_population(INITIALPOP)
+
+	while(True):
+		data = train(pop)
+		if(data[0] >= DESIREDSCORE):
+			final_player = data[1]
+			break
+		else:
+			pop = data[1]
+
+	save(final_player)
