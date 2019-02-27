@@ -6,7 +6,7 @@ from math import pi, sin
 import random
 
 MAXCOLORS = 1
-N = 10
+N = 500
 
 def main():
     avg = 0
@@ -18,13 +18,14 @@ def main():
     
 
 from ai.ai import AI
+from ai.algorithms.holyNeighborAi import choosePosition as function
 def playGame():
-    game = Tetris(numColors=MAXCOLORS)
-    ai = AI()
+    game = Tetris(numColors=MAXCOLORS, numColumns=10, numRows=10)
+    ai = AI(function)
     # loop count variables:
     numTicks = 0
     while not game.lost: # game loop ends when game is lost
-        ai.ai(game)
+        ai.ai(game, display=False)
         game.incrementTime()
         numTicks += 1
     return game.numLines

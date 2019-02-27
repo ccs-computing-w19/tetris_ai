@@ -5,9 +5,9 @@ from ai.utils.display import display
 # This ai tries to maximize the number of occupied tiles that border the target
 
 #Weights: (adjust these parameters)
-HOLE = -3
-NEIGHBOR = 1
-DEPTH = 0.33
+HOLE = -2 # -3
+NEIGHBOR = 1 # 1
+DEPTH = 0.20 # 0.33
 
 # return: 'best' end position
 # params: game board, list of end positions
@@ -26,6 +26,4 @@ def choosePosition(board, positions):
         if neighborCount >= bestCount: 
             bestPosition = p
             bestCount = neighborCount
-    position = positions[bestPosition]
-    del positions[bestPosition]
-    return position
+    return bestPosition

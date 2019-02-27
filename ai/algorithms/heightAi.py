@@ -14,8 +14,4 @@ def choosePosition(board, positions):
 					bestPosition = p
 					bestPart = part
 				break
-	#print(bestPart)
-	#print(bestPosition)
-	position = positions[bestPosition]
-	del positions[bestPosition]
-	return position
+	return bestPosition

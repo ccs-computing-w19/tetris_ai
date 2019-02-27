@@ -1,19 +1,21 @@
 from ai.utils.utils import getActivePosition, findPositions
 from ai.utils.pathfinding import findPath
-from ai.utils.display import display
+from ai.utils.display import display as disp
 from ai.algorithms.holyNeighborAi import choosePosition
 
 class AI():
 
-    def __init__(self):
-        self.choosePosition = choosePosition
+    def __init__(self, ai_func=None):
+        if ai_func == None: self.choosePosition = choosePosition
+        else: self.choosePosition = ai_func
         self.moves = []
         self.numPieces = 0
 
     # this makes a certain number of moves on the game
-    def ai(self, game):
+    def ai(self, game, display=False):
         if game.numPieces > self.numPieces:
             board = game.getBoard()
+            if display: disp(board)
             position = getActivePosition(board, game.pivot)
             positions = findPositions(board, position, game.rotatable)
             path = None
@@ -21,7 +23,9 @@ class AI():
                 # someday get around to fixing this stupid bug:
                 if len(positions) < 1:
                     path = []; break # set path to empty to deal with error
-                target = self.choosePosition(board, positions)
+                p = self.choosePosition(board, positions)
+                target = positions[p]
+                del positions[p] # remove from list of remaining positions
                 path = findPath(board, position, target, game.rotatable)
             self.moves = path
             self.numPieces += 1

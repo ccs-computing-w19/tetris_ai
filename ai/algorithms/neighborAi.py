@@ -18,6 +18,4 @@ def choosePosition(board, positions):
         if neighborCount >= bestCount: 
             bestPosition = p
             bestCount = neighborCount
-    position = positions[bestPosition]
-    del positions[bestPosition]
-    return position
+    return bestPosition
