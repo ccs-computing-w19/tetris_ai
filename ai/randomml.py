@@ -126,11 +126,33 @@ def evolve(pop):
 
 	return newGen
 
+def playRound(game, player):
+	#player plays a around of the game and returns the updated score and state of game (ongoing or lost) return a tuple(game, score, gamestate)
+	pass
+
 def train(pop):
 	#each player plays the game until death
-	#if any player plays well enough (> DESIREDSCORE), then return tuple (score, player)
+	#if any player plays well enough (>= DESIREDSCORE), then return tuple (score, player)
 	#otherwise, evolve them and return highest score and new generation (highest score, new gen)
-	pass
+	
+	highestScore = 0
+	for p in pop:
+		#make tetris object
+		#tetris = 0;
+		lost = false
+		score = 0
+		while(!lost):
+			roundState = playRound(game, p)
+			lost = roundState[2]
+			score = roundState[1]
+			game = roundState[0]
+			if(score >= DESIREDSCORE):
+				return (score, p)
+		if(score > highestScore):
+			highestScore = score
+
+	newGen = evolve(pop)
+	return (highestScore, newGen)
 
 def save(player):
 	#copy down parameters to file
@@ -148,3 +170,5 @@ def main():
 			pop = data[1]
 
 	save(final_player)
+
+
