@@ -203,6 +203,7 @@ def save(player):
 
 def main():
 	pop = create_initial_population(INITIALPOP)
+	print(pop)
 	popnum = 0
 	while(True):
 		popnum += 1
