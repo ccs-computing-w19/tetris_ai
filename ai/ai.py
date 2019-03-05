@@ -1,7 +1,7 @@
 from ai.utils.utils import getActivePosition, findPositions
 from ai.utils.pathfinding import findPath
 from ai.utils.display import display as disp
-from ai.algorithms.holyNeighborAi import choosePosition
+from ai.algorithms.mlAi import choosePosition
 
 class AI():
 

@@ -25,7 +25,7 @@ from ai.utils.pathfinding import findPath
 CHANCEOFSURVIVAL = 0.2
 CHANCEOFMUTATE = 0.25
 INITIALPOP = 30
-DESIREDSCORE = 50
+DESIREDSCORE = 500
 
 class Player:
 	def __init__(self, weights = [0, 0, 0]):
@@ -198,10 +198,10 @@ def train(pop):
 	return (highestScore, newGen)
 
 def save(player):
-	f = open("ai/algorithms/mlmodel",'w+')
-	f.write(player.wHeight)
-	f.write(player.wNeighbors)
-	f.write(player.wHoles)
+	f = open("mlmodel",'w+')
+	f.write(str(player.wHeight) + "\n")
+	f.write(str(player.wNeighbors) + "\n")
+	f.write(str(player.wHoles) + "\n")
 	f.close()
 
 def main():
