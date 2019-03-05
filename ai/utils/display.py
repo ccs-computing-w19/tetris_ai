@@ -11,3 +11,6 @@ def display(board, position=(), clear=True):
         string[point[0]][point[1]] = "*"
     for i in string:
         print("".join(i))
+
+def clear():
+    system('clear')

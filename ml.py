@@ -1,9 +1,11 @@
 from tetris.tetris import Tetris
-import random
+import random, time
 import numpy as np
 
 from ai.utils.utils import getActivePosition, findPositions, isOutOfBounds
 from ai.utils.pathfinding import findPath
+
+import ai.utils.display as disp
 
 #use genetic algorithm to find weights for specified parametersto calculate which position to choose
 
@@ -23,8 +25,8 @@ from ai.utils.pathfinding import findPath
 #make the ai play the game
 
 CHANCEOFSURVIVAL = 0.1
-CHANCEOFMUTATE = 0.6
-INITIALPOP = 8
+CHANCEOFMUTATE = 0.8
+INITIALPOP = 10
 DESIREDSCORE = 1000
 
 class Player:
@@ -38,12 +40,15 @@ class Player:
 		self.wNeighbors = random.uniform(-5, 5)
 		self.wHoles = random.uniform(-5, 5)
 
+	# this is for comparing players to each other visually
+	def name(self):
+		return f"{int(self.wHeight*10):02d}:{int(self.wNeighbors*10):02d}:{int(self.wHoles*10):02d}"
+
 	def findHeight(self, board):
-		height = 0
+		height = 3
 		for r in range(len(board)):
-			if(1 in board[r]):
-				height = len(board) - r
-				break
+			for tile in board[r]:
+				if tile.isInactive(): return len(board) - r
 		return height
 
 	def numOfNeighbors(self, position, board):
@@ -89,22 +94,24 @@ class Player:
 			del positions[p] # remove from list of remaining positions
 			path = findPath(board, position, target, game.rotatable)
 		moves = path
-		# Essentially, handle input:
-		while len(moves) > 0:
-			if moves[0] == 'd':
-				del moves[0]
-				return
-			elif moves[0] == 'r':
-				del moves[0]
-				game.translateActiveRight()
-			elif moves[0] == 'l':
-				del moves[0]
-				game.translateActiveLeft()
-			elif moves[0] == 'u':
-				del moves[0]
-				game.rotateActiveClockwise()
-		if(self.findHeight(board) > 15):
-			game.lost = True
+		# Execute move sequence:
+		numPieces = game.numPieces
+		while numPieces == game.numPieces:
+			if len(moves) > 0:
+				if moves[0] == 'd':
+					del moves[0]
+					game.incrementTime()
+				elif moves[0] == 'r':
+					del moves[0]
+					game.translateActiveRight()
+				elif moves[0] == 'l':
+					del moves[0]
+					game.translateActiveLeft()
+				elif moves[0] == 'u':
+					del moves[0]
+					game.rotateActiveClockwise()
+			else:
+				game.incrementTime()
 
 def create_initial_population(count):
 	#creates a population of players with random genomes
@@ -166,33 +173,28 @@ def evolve(pop, pop_scores):
 
 	return newGen
 
-def playRound(game, player):
-	#player plays a around of the game and returns the updated score and state of game (ongoing or lost) return a tuple(game, score, gamestate)
-	player.ai(game)
-	game.incrementTime()
-
 def train(pop):
 	#each player plays the game until death
 	#if any player plays well enough (>= DESIREDSCORE), then return tuple (score, player)
 	#otherwise, evolve them and return highest score and new generation (highest score, new gen)
-	pop_scores = []
+	scores = []
 	highestScore = 0
-	for p in pop:
-		game = Tetris()
-		lost = False
-		score = 0
-		while(not lost):
-			playRound(game, p)
-			lost = game.lost
-			score = game.numLines
-			if(score >= DESIREDSCORE):
-				return (score, p)
-		pop_scores.append(score)
-		if(score > highestScore):
-			highestScore = score
-		print(score)
-	newGen = evolve(pop, pop_scores)
-	return (highestScore, newGen)
+	seed = int(round(time.time() * 1000)) 
+	print(f"Pop: {[player.name() for player in pop]}")
+	
+	for player in pop:
+		game = Tetris(numColumns=10, numRows=10, seed=seed) # Use the same seed for each player, for fairness
+		while(not game.lost):
+			player.ai(game) #play round of game
+			#disp.clear()
+			#print(f"Playing: {player.name()}")
+			#print(f"Lines: {game.numLines}")
+			#disp.display(game.getBoard(), clear=False)
+		print(f"{player.name()} played game with score {game.numLines}.")
+		scores.append(game.numLines)
+	
+	newGen = evolve(pop, scores)
+	return (max(scores), newGen)
 
 def save(player):
 	f = open("mlmodel",'w+')
@@ -203,13 +205,12 @@ def save(player):
 
 def main():
 	pop = create_initial_population(INITIALPOP)
-	print(pop)
 	popnum = 0
 	while(True):
 		popnum += 1
 		data = train(pop)
-		print("pop num: {}".format(popnum))
-		print("best score so far: {}".format(data[0]))
+		print(f"pop num: {popnum}")
+		print(f"best score so far: {data[0]}")
 		if(data[0] >= DESIREDSCORE):
 			final_player = data[1]
 			print("success")
