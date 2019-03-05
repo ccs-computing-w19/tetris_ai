@@ -22,10 +22,10 @@ from ai.utils.pathfinding import findPath
 #get score from end of a game
 #make the ai play the game
 
-CHANCEOFSURVIVAL = 0.2
-CHANCEOFMUTATE = 0.25
-INITIALPOP = 30
-DESIREDSCORE = 500
+CHANCEOFSURVIVAL = 0.1
+CHANCEOFMUTATE = 0.6
+INITIALPOP = 4
+DESIREDSCORE = 100
 
 class Player:
 	def __init__(self, weights = [0, 0, 0]):
@@ -103,6 +103,8 @@ class Player:
 			elif moves[0] == 'u':
 				del moves[0]
 				game.rotateActiveClockwise()
+		if(self.findHeight(board) > 15):
+			game.lost = True
 
 def create_initial_population(count):
 	#creates a population of players with random genomes
@@ -121,24 +123,18 @@ def breed(p1, p2):
 	return p3
 
 def mutate(p):
-	token = random.uniform(-3, 3)
+	token = random.uniform(-1, 1)
 	p.wHeight = p.wHeight + token
 
-	token = random.uniform(-3, 3)
+	token = random.uniform(-1, 1)
 	p.wNeighbors = p.wNeighbors + token
 
-	token = random.uniform(-3, 3)
+	token = random.uniform(-1, 1)
 	p.wHoles = p.wHoles + token
 
 	return p
 
-def evolve(pop):
-	#first make each of them play the game ***
-
-	pop_scores = []
-	for p in pop:
-		pop_scores.append(p.get_score())
-
+def evolve(pop, pop_scores):
 	#take top half of them and some random ones from the weak half
 	genSize = len(pop)
 	median = np.median(pop_scores)
@@ -159,10 +155,10 @@ def evolve(pop):
 	emptyPop = genSize - newGenSize
 
 	for i in range(emptyPop):
-		j = random.randint(0, newGenSize)
+		j = random.randint(0, newGenSize - 1)
 		k = j
 		while(j == k):
-			k = random.randint(0, newGenSize)
+			k = random.randint(0, newGenSize - 1)
 		p1 = newGen[j]
 		p2 = newGen[k]
 
@@ -179,7 +175,7 @@ def train(pop):
 	#each player plays the game until death
 	#if any player plays well enough (>= DESIREDSCORE), then return tuple (score, player)
 	#otherwise, evolve them and return highest score and new generation (highest score, new gen)
-	
+	pop_scores = []
 	highestScore = 0
 	for p in pop:
 		game = Tetris()
@@ -191,10 +187,11 @@ def train(pop):
 			score = game.numLines
 			if(score >= DESIREDSCORE):
 				return (score, p)
+		pop_scores.append(score)
 		if(score > highestScore):
 			highestScore = score
-
-	newGen = evolve(pop)
+		print(score)
+	newGen = evolve(pop, pop_scores)
 	return (highestScore, newGen)
 
 def save(player):
@@ -206,9 +203,12 @@ def save(player):
 
 def main():
 	pop = create_initial_population(INITIALPOP)
-
+	popnum = 0
 	while(True):
+		popnum += 1
 		data = train(pop)
+		print("pop num: {}".format(popnum))
+		print("best score so far: {}".format(data[0]))
 		if(data[0] >= DESIREDSCORE):
 			final_player = data[1]
 			print("success")
