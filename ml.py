@@ -24,8 +24,8 @@ from ai.utils.pathfinding import findPath
 
 CHANCEOFSURVIVAL = 0.1
 CHANCEOFMUTATE = 0.6
-INITIALPOP = 4
-DESIREDSCORE = 100
+INITIALPOP = 8
+DESIREDSCORE = 1000
 
 class Player:
 	def __init__(self, weights = [0, 0, 0]):
@@ -117,9 +117,9 @@ def create_initial_population(count):
 
 def breed(p1, p2):
 	p3 = Player()
-	p3.wHeight = random.choice(p1.wHeight, p2.wHeight)
-	p3.wNeighbors = random.choice(p1.wNeighbors, p2.wNeighbors)
-	p3.wHoles = random.choice(p1.wHoles, p2.wHoles)
+	p3.wHeight = random.choice([p1.wHeight, p2.wHeight])
+	p3.wNeighbors = random.choice([p1.wNeighbors, p2.wNeighbors])
+	p3.wHoles = random.choice([p1.wHoles, p2.wHoles])
 	return p3
 
 def mutate(p):
