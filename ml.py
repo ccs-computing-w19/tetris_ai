@@ -34,6 +34,7 @@ class Player:
 		self.wHeight = weights[0]
 		self.wNeighbors = weights[1]
 		self.wHoles = weights[2]
+		self.randomNumber = random.random()
 
 	def giveRandomWeights(self):
 		self.wHeight = random.uniform(-5, 5)
@@ -68,16 +69,19 @@ class Player:
 					holes += 1
 		return holes
 
+	def score(self, position, board):
+		print(self.findHeight(board), self.numOfNeighbors(position, board), self.numOfHoles(position, board))
+		return self.wHeight * self.findHeight(board) + self.wNeighbors * self.numOfNeighbors(position, board) + self.wHoles * self.numOfHoles(position, board)
+
 	def choosePosition(self, positions, board):
-		positionScores = []
-		bestPosIndex = -1
-		for pos in positions:
-			positionScores.append(self.wHeight * self.findHeight(board) + self.wNeighbors * self.numOfNeighbors(pos, board) + self.wHoles * self.numOfHoles(pos, board))
-		bestPosScore = max(positionScores)
-		numOfPositions = len(positions)
-		for i in range(numOfPositions):
-			if(positionScores[i] == bestPosScore):
-				bestPosIndex = i
+		bestPosScore = self.score(positions[0], board)
+		bestPosIndex = 0
+		for p in range(1, len(positions)):
+			score = self.score(positions[p], board)
+			if score >= bestPosScore:
+				bestPosScore = score
+				bestPosIndex = p
+		print(bestPosIndex, bestPosScore)
 		return bestPosIndex
 
 	def ai(self, game): #mutator function
@@ -179,7 +183,7 @@ def train(pop):
 	#otherwise, evolve them and return highest score and new generation (highest score, new gen)
 	scores = []
 	highestScore = 0
-	seed = int(round(time.time() * 1000)) 
+	seed = random.randint(1, 1000000) #int(round(time.time() * 1000))
 	print(f"Pop: {[player.name() for player in pop]}")
 	
 	for player in pop:
@@ -220,5 +224,8 @@ def main():
 
 	save(final_player)
 
-main()
+if __name__ == "__main__":
+	random.seed(3)
+	print(random.random())
+	main()
 
