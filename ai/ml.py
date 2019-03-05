@@ -1,7 +1,6 @@
 import tetris
-from tensorflow import keras
-import numpy as np
 import random
+import numpy as np
 
 from ai.utils.utils import isOutOfBounds
 from ai.utils.pathfinding import findPath
