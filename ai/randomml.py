@@ -29,7 +29,7 @@ CHANCEOFMUTATE = 0.25
 INITIALPOP = 30
 DESIREDSCORE = 20
 
-class player:
+class Player:
 	def __init__(self, weights = [0, 0, 0]):
 		wHeight = weights[0]
 		wNeighbors = weights[1]
@@ -64,13 +64,13 @@ def create_initial_population(count):
 	#creates a population of players with random genomes
 	pop = []
 	for i in range(count):
-		p = player()
+		p = Player()
 		p.giveRandomWeights()
 		pop.append(p)
 	return pop
 
 def breed(p1, p2):
-	p3 = player()
+	p3 = Player()
 	p3.wHeight = random.choice(p1.wHeight, p2.wHeight)
 	p3.wNeighbors = random.choice(p1.wNeighbors, p2.wNeighbors)
 	p3.wHoles = random.choice(p1.wHoles, p2.wHoles)
