@@ -7,6 +7,8 @@ from ai.utils.pathfinding import findPath
 
 import ai.utils.display as disp
 
+from mlUtils.heuristics import *
+
 #use genetic algorithm to find weights for specified parametersto calculate which position to choose
 
 #concept:
@@ -45,33 +47,8 @@ class Player:
 	def name(self):
 		return f"{int(self.wHeight*10):02d}:{int(self.wNeighbors*10):02d}:{int(self.wHoles*10):02d}"
 
-	def findHeight(self, board):
-		height = 3
-		for r in range(len(board)):
-			for tile in board[r]:
-				if tile.isInactive(): return len(board) - r
-		return height
-
-	def numOfNeighbors(self, position, board):
-		neighborCount = 0
-		for point in position:
-			if isOutOfBounds(board, (point[0] - 1, point[1])) or board[point[0] - 1][point[1]].isInactive(): neighborCount += 1
-			if isOutOfBounds(board, (point[0] + 1, point[1])) or board[point[0] + 1][point[1]].isInactive(): neighborCount += 1
-			if isOutOfBounds(board, (point[0], point[1] - 1)) or board[point[0]][point[1] - 1].isInactive(): neighborCount += 1
-			if isOutOfBounds(board, (point[0], point[1] + 1)) or board[point[0]][point[1] + 1].isInactive(): neighborCount += 1
-		return neighborCount
-
-	def numOfHoles(self, position, board):
-		holes = 0
-		for r in range(len(board)):
-			for c in range(len(board[r])):
-				if(not isOutOfBounds(board, (r - 1, c)) and board[r-1][c].isInactive()):
-					holes += 1
-		return holes
-
 	def score(self, position, board):
-		print(self.findHeight(board), self.numOfNeighbors(position, board), self.numOfHoles(position, board))
-		return self.wHeight * self.findHeight(board) + self.wNeighbors * self.numOfNeighbors(position, board) + self.wHoles * self.numOfHoles(position, board)
+		return self.wHeight * findHeight(board) + self.wNeighbors * numOfNeighbors(position, board) + self.wHoles * numOfHoles(position, board)
 
 	def choosePosition(self, positions, board):
 		bestPosScore = self.score(positions[0], board)
@@ -81,7 +58,7 @@ class Player:
 			if score >= bestPosScore:
 				bestPosScore = score
 				bestPosIndex = p
-		print(bestPosIndex, bestPosScore)
+		print(bestPosIndex, round(bestPosScore, 2))
 		return bestPosIndex
 
 	def ai(self, game): #mutator function
@@ -134,15 +111,9 @@ def breed(p1, p2):
 	return p3
 
 def mutate(p):
-	token = random.uniform(-1, 1)
-	p.wHeight = p.wHeight + token
-
-	token = random.uniform(-1, 1)
-	p.wNeighbors = p.wNeighbors + token
-
-	token = random.uniform(-1, 1)
-	p.wHoles = p.wHoles + token
-
+	p.wHeight = p.wHeight + random.uniform(-1, 1)
+	p.wNeighbors = p.wNeighbors + random.uniform(-1, 1)
+	p.wHoles = p.wHoles + random.uniform(-1, 1)
 	return p
 
 def evolve(pop, pop_scores):
