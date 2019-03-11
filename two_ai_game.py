@@ -69,11 +69,11 @@ def playGame():
     render(game, game2)
 
     # loop count variables:
-    numTicks = 0
+    numPieces = game.numPieces + game2.numPieces
     timeSinceIncrement = 0
 
     pressedKeys = [-1, -1, -1, -1] # up, down, left, right
-    while not game.lost: # game loop ends when game is lost
+    while not game.lost and not game2.lost: # game loop ends when game is lost
         for event in pygame.event.get(): # event handling loop
             if event.type == pygame.QUIT:
                 terminate() # exit game
@@ -85,11 +85,15 @@ def playGame():
             ai2.ai(game2)
             game2.incrementTime()
             timeSinceIncrement = 0
-            render(game, game2)
+            
+            
+            if game.numPieces + game2.numPieces > numPieces:
+                render(game, game2)
+            numPieces = game.numPieces + game2.numPieces
 
         FPSCLOCK.tick(FPS)
-        numTicks += 1
         timeSinceIncrement += 1
+    return "Player 2 (Will) won" if game.lost else "Player 1 (Bill) won"
 
 
 def playEndMenu(response):
