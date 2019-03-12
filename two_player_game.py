@@ -21,6 +21,13 @@ def main():
     DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
     drawing = Drawing(pygame, DISPLAYSURF, WINDOWWIDTH, WINDOWHEIGHT)
 
+    # play music
+    if len(sys.argv) < 2 or not sys.argv[1] == "--silent":
+        musicFile = 'resources/music.mp3'
+        pygame.mixer.init()
+        pygame.mixer.music.load(musicFile)
+        pygame.mixer.music.play(-1)
+    
     pygame.display.set_caption("Enomino")
     playMenu(drawing, "Enomino")
     while True:
