@@ -58,7 +58,7 @@ def playGame():
 
 def playMenu(drawing, text):
     drawing.fill()
-    drawing.drawMenu("Enomino", BIGFONT, BASICFONT)
+    drawing.drawMenu(text, BIGFONT, BASICFONT)
 
     ready = False
     while not ready: # start screen loop

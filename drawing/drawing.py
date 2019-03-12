@@ -20,13 +20,10 @@ class Drawing():
         self.DISPLAYSURF = displaySurf
         self.WINDOWWIDTH, self.WINDOWHEIGHT = width, height
 
-
     def fill(self):
         self.DISPLAYSURF.fill(self.BGCOLOR)
-
     
     def drawText(self, text, font, location, color=None, center=False):
-        print(f"Color: {color}")
         textSurf = font.render(text, True, color if color else self.TEXTCOLOR)
         textRect = textSurf.get_rect()
         if center: textRect.center = location
