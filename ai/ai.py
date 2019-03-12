@@ -30,7 +30,7 @@ class AI():
                 path = findPath(board, position, target, game.rotatable)
             self.moves = path
             self.numPieces += 1
-        # Essentially, handle input:
+        # Execute move sequence:
         while len(self.moves) > 0:
             if self.moves[0] == 'd':
                 del self.moves[0]
@@ -44,3 +44,38 @@ class AI():
             elif self.moves[0] == 'u':
                 del self.moves[0]
                 game.rotateActiveClockwise()
+
+    def aiSequence(self, game, display=False):
+        board = game.getBoard()
+        if display: disp(board)
+        position = getActivePosition(board, game.pivot)
+        positions = findPositions(board, position, game.rotatable)
+        path = None
+        while path == None:
+            # someday get around to fixing this stupid bug:
+            if len(positions) < 1:
+                path = []; break # set path to empty to deal with error
+            p = self.choosePosition(board, positions)
+            target = positions[p]
+            del positions[p] # remove from list of remaining positions
+            path = findPath(board, position, target, game.rotatable)
+        self.moves = path
+        self.numPieces += 1
+        # Execute move sequence:
+        numPieces = game.numPieces
+        while numPieces == game.numPieces:
+            if len(self.moves) > 0:
+                if self.moves[0] == 'd':
+                    del self.moves[0]
+                    game.incrementTime()
+                elif self.moves[0] == 'r':
+                    del self.moves[0]
+                    game.translateActiveRight()
+                elif self.moves[0] == 'l':
+                    del self.moves[0]
+                    game.translateActiveLeft()
+                elif self.moves[0] == 'u':
+                    del self.moves[0]
+                    game.rotateActiveClockwise()
+            else:
+                game.incrementTime()

@@ -1,5 +1,5 @@
 from tetris.tetris import Tetris
-import random, time
+import random, time, sys
 import numpy as np
 
 from ai.utils.utils import getActivePosition, findPositions, isOutOfBounds
@@ -32,6 +32,9 @@ CHANCEOFMUTATE = 0.2
 INITIALPOP = 10
 DESIREDSCORE = 1000
 NUMWEIGHTS = 4
+VERBOSE = False
+
+
 
 class Player:
 	def __init__(self, weights=None):
@@ -77,6 +80,7 @@ class Player:
 					game.rotateActiveClockwise()
 			else:
 				game.incrementTime()
+	
 
 def create_initial_population(count):
 	#creates a population of players with random genomes
@@ -98,9 +102,10 @@ def mutate(p):
 		p.weights[w] = p.weights[w] + random.uniform(-1, 1)
 	return p
 
-def evolve(pop, pop_scores):
+def evolve(pop, pop_scores, base):
 	#take top half of them and some random ones from the weak half
 	genSize = len(pop)
+
 	for i in range(genSize):
 		pop_scores[i] += random.random() # add random fuzz
 	median = np.median(pop_scores)
@@ -109,35 +114,35 @@ def evolve(pop, pop_scores):
 	for i in range(genSize):
 		if (pop_scores[i] > median):
 			newGen.append(pop[i])
-			print(pop[i].name(), pop_scores[i], "SURVIVED")
+			if VERBOSE: print(pop[i].name(), int(pop_scores[i]), "SURVIVED")
 		elif (CHANCEOFSURVIVAL > random.random()):
-			newGen.append(pop[i])
-			print(pop[i].name(), pop_scores[i], "SQUEAKED BY")
+			newGen.append(mutate(pop[i]))
+			if VERBOSE: print(pop[i].name(), int(pop_scores[i]), "SQUEAKED BY")
 		else:
-			print(pop[i].name(), pop_scores[i], "DIED")
+			if VERBOSE: print(pop[i].name(), int(pop_scores[i]), "DIED")
 
-	print("Median score:", round(median, 2))
+	print("Median score:", int(median), f"(relative to baseline: {round(int(median)/(base+10**(-10)) * 100)}%)")
 
-	newGenSize = len(newGen)
-	
-	#randomly mutate some of them
-	for i in range(newGenSize):
-		if (CHANCEOFMUTATE > random.random()):
-			newGen[i] = mutate(newGen[i])
-
-	emptyPop = genSize - newGenSize
-	
-	for i in range(emptyPop):
-		j = random.randint(0, newGenSize - 1)
-		k = j
-		while (j == k):
-			k = random.randint(0, newGenSize - 1)
-		p1 = newGen[j]
-		p2 = newGen[k]
-
-		newGen.append(breed(p1, p2))
+	while len(newGen) < genSize:
+		a, b = random.randint(0, len(newGen) - 1), random.randint(0, len(newGen) - 1)
+		while a == b:
+			b = random.randint(0, len(newGen) - 1)
+		newGen.append(mutate(breed(newGen[a], newGen[b])))
 	
 	return newGen
+
+from ai.algorithms.holyNeighborAi import choosePosition as baselineFunction
+from ai.ai import AI
+def baseline(seed):
+	random.seed(seed)
+	game = Tetris(numColumns=10, numRows=10)
+	baselineAI = AI(baselineFunction)
+	while(not game.lost):
+		baselineAI.aiSequence(game)
+	random.seed()
+
+	if VERBOSE: print(f"Baseline AI played game with score {game.numLines}.")
+	return game.numLines
 
 def train(population, seed):
 	#each player plays the game until death
@@ -145,6 +150,7 @@ def train(population, seed):
 	#otherwise, evolve them and return highest score and new generation (highest score, new gen)
 	scores = []
 	highestScore = 0
+	bestPlayer = 0
 
 	for player in population:
 		random.seed(seed)
@@ -153,9 +159,14 @@ def train(population, seed):
 			player.ai(game) #play round of game
 		random.seed() # reset random seed
 
-		print(f"{player.name()} played game with score {game.numLines}.", player.weights)
+		if game.numLines > highestScore:
+			highestScore = game.numLines
+			bestPlayer = player
+
+		if VERBOSE: print(f"{player.name()} played game with score {game.numLines}.", player.weights)
 		scores.append(game.numLines) # adds random element to make a continuum of values
 
+	print(f"{bestPlayer.name()} is the best player with a score of {highestScore}: {bestPlayer.weights}")
 	return scores
 
 def save(player):
@@ -164,24 +175,38 @@ def save(player):
 		f.write(str(weight) + "\n")
 	f.close()
 
-def main():
-	pop = create_initial_population(INITIALPOP)
-	print("\nInitial Population:")
-	for player in pop:
-		print(player.name())
+def main(popCount):
+	pop = create_initial_population(popCount if popCount else INITIALPOP)
+
+	if VERBOSE: 
+		print("\nInitial Population:")
+		for player in pop: print(player.name())
+	
 	popnum = 1
 	while(True):
 		seed = random.randint(1, 10**10)
 		print(f"\nPopulation {popnum}:")
+		base = baseline(seed)
 		scores = train(pop, seed)
-		print("\n")
-		pop = evolve(pop, scores)
+		if VERBOSE: print("\n")
+		pop = evolve(pop, scores, base)
 		popnum += 1
 	
 	save(final_player)
 
 if __name__ == "__main__":
-	main()
+	count = None
+	if "-v" in sys.argv:
+		sys.argv.remove("-v")
+		VERBOSE = True
+	if len(sys.argv) > 1 and sys.argv[1].isnumeric():
+		count = int(sys.argv[1])
+		del sys.argv[1]
+	if len(sys.argv) != 1:
+		print("Usage: python3 train_ml.py [-v] [count]")
+		exit(0)
+	main(popCount=count)
+	
 
 	
 

@@ -14,7 +14,6 @@ def lineClears(position, board):
                 clears.append(point[0])
     return len(clears)
 
-
 def numOfNeighbors(position, board):
     neighborCount = 0
     for point in position:
