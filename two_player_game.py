@@ -36,26 +36,6 @@ def main():
         playEndMenu(response)
 
 
-def playStartMenu():
-    DISPLAYSURF.fill(BGCOLOR)
-    
-    text = "Enomino"
-    drawText(text, BIGFONT, TEXTSHADOWCOLOR, (int(WINDOWWIDTH / 2), int(WINDOWHEIGHT / 2) - 30), True)
-    drawText(text, BIGFONT, TEXTCOLOR, (int(WINDOWWIDTH / 2) - 3, int(WINDOWHEIGHT / 2) - 30 - 3), True)
-    
-    # Draw the additional "Press a key to play." text.
-    drawText("Press a key to play.", BASICFONT, TEXTCOLOR, (int(WINDOWWIDTH / 2), int(WINDOWHEIGHT / 2) + 30), True)
-
-    ready = False
-    while not ready: # start screen loop
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT: 
-                terminate() # exit game
-            if event.type == pygame.KEYDOWN:
-                ready = True
-        pygame.display.update()
-        FPSCLOCK.tick()
-
 from ai.ai import AI
 def playGame():
     seed = int(time.time())
@@ -154,6 +134,27 @@ def handleInput(game, pressedKeys, numTicks):
     return updated
 
 
+def playStartMenu():
+    DISPLAYSURF.fill(BGCOLOR)
+    
+    text = "Enomino"
+    drawText(text, BIGFONT, TEXTSHADOWCOLOR, (int(WINDOWWIDTH / 2), int(WINDOWHEIGHT / 2) - 30), True)
+    drawText(text, BIGFONT, TEXTCOLOR, (int(WINDOWWIDTH / 2) - 3, int(WINDOWHEIGHT / 2) - 30 - 3), True)
+    
+    # Draw the additional "Press a key to play." text.
+    drawText("Press a key to play.", BASICFONT, TEXTCOLOR, (int(WINDOWWIDTH / 2), int(WINDOWHEIGHT / 2) + 30), True)
+
+    ready = False
+    while not ready: # start screen loop
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT: 
+                terminate() # exit game
+            if event.type == pygame.KEYDOWN:
+                ready = True
+        pygame.display.update()
+        FPSCLOCK.tick()
+
+
 def playEndMenu(response):
     DISPLAYSURF.fill(BGCOLOR)
 
@@ -250,8 +251,6 @@ def render(game, aiGame):
     drawStatus(game.numTurns, game.numLines, game.next, (WINDOWWIDTH/2 - 150, 50))
     drawStatus(aiGame.numTurns, aiGame.numLines, aiGame.next, (WINDOWWIDTH - 150, 50))
     pygame.display.update()
-
-
 
 
 if __name__ == "__main__":

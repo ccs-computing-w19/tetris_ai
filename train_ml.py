@@ -184,11 +184,20 @@ def main(popCount):
 	
 	popnum = 1
 	while(True):
-		seed = random.randint(1, 10**10)
 		print(f"\nPopulation {popnum}:")
+		
+		seed = random.randint(1, 10**10)
 		base = baseline(seed)
 		scores = train(pop, seed)
+		seed = random.randint(1, 10**10)
+		base += baseline(seed)
+		scores += train(pop, seed)
+		seed = random.randint(1, 10**10)
+		base += baseline(seed)
+		scores += train(pop, seed)
+		
 		if VERBOSE: print("\n")
+		
 		pop = evolve(pop, scores, base)
 		popnum += 1
 	
