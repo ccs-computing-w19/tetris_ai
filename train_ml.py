@@ -150,7 +150,7 @@ def train(population, seed):
 	#otherwise, evolve them and return highest score and new generation (highest score, new gen)
 	scores = []
 	highestScore = 0
-	bestPlayer = 0
+	bestPlayer = population[0]
 
 	for player in population:
 		random.seed(seed)
@@ -189,13 +189,15 @@ def main(popCount):
 		seed = random.randint(1, 10**10)
 		base = baseline(seed)
 		scores = train(pop, seed)
+		"""
 		seed = random.randint(1, 10**10)
 		base += baseline(seed)
 		scores += train(pop, seed)
 		seed = random.randint(1, 10**10)
 		base += baseline(seed)
 		scores += train(pop, seed)
-		
+		"""
+
 		if VERBOSE: print("\n")
 		
 		pop = evolve(pop, scores, base)
