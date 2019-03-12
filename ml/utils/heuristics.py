@@ -2,12 +2,18 @@ from ai.utils.utils import getActivePosition, findPositions, isOutOfBounds
 from ai.utils.pathfinding import findPath
 from ai.utils.display import display
 
-def findHeight(board):
-    height = 3
-    for r in range(len(board)):
-        for tile in board[r]:
-            if tile.isInactive(): return len(board) - r
-    return height
+def lineClears(position, board):
+    clears = []
+    for point in position:
+        if point[0] not in clears:
+            rowIsFull = True
+            for col in range(len(board[point[0]])):
+                if board[point[0]][col].isEmpty() and (point[0], col, point[2]) not in position:
+                    rowIsFull = False
+            if rowIsFull:
+                clears.append(point[0])
+    return len(clears)
+
 
 def numOfNeighbors(position, board):
     neighborCount = 0
@@ -19,12 +25,11 @@ def numOfNeighbors(position, board):
     return neighborCount
 
 def numOfHoles(position, board):
-    holes = 0
-    for r in range(len(board)):
-        for c in range(len(board[r])):
-            if(not isOutOfBounds(board, (r - 1, c)) and board[r-1][c].isInactive()):
-                holes += 1
-    return holes
+    holeCount = 0
+    for point in position:
+        if (not isOutOfBounds(board, (point[0] + 1, point[1])) and not (point[0] + 1, point[1], point[2]) in position and not board[point[0] + 1][point[1]].isInactive()):
+            holeCount += 1
+    return holeCount
 
 def pieceHeight(position, board):
     return position[0][0]

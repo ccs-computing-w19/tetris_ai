@@ -29,12 +29,13 @@ from ml.utils.heuristics import *
 
 CHANCEOFSURVIVAL = 0.1
 CHANCEOFMUTATE = 0.2
-INITIALPOP = 50
+INITIALPOP = 10
 DESIREDSCORE = 1000
+NUMWEIGHTS = 4
 
 class Player:
 	def __init__(self, weights=None):
-		self.weights = weights if weights != None else [0, 0, 0, 0]
+		self.weights = weights if weights != None else [0 for w in range(NUMWEIGHTS)]
 
 	def giveRandomWeights(self):
 		for w in range(len(self.weights)):
@@ -42,17 +43,13 @@ class Player:
 
 	# this is for comparing players to each other visually
 	def name(self):
-		name = ""
-		for weight in self.weights:
-			name += f"{int(weight*10):02d}:"
-		return name
+		return "(" + " ".join([f'{round(weight, 1): >4}' for weight in self.weights]) + ")"
 
 	def ai(self, game): #mutator function
 		board = game.getBoard()
 		position = getActivePosition(board, game.pivot)
 		positions = findPositions(board, position, game.rotatable)
 		path = None
-		p = 0; target = 0
 		while path == None:
 			# someday get around to fixing this stupid bug:
 			if len(positions) < 1:
@@ -80,18 +77,6 @@ class Player:
 					game.rotateActiveClockwise()
 			else:
 				game.incrementTime()
-			clear()
-			print(f"Playing: {self.name()}")
-			print(f"Lines: {game.numLines}")
-			print(f"Target: {target}")
-			print([round(self.weights[0] * findHeight(board) + self.weights[1] * numOfNeighbors(positions[pos], board) + self.weights[2] * numOfHoles(positions[pos], board), 2) for pos in range(len(positions))])
-			print(self.weights[0] * findHeight(board) + self.weights[1] * numOfNeighbors(target, board) + self.weights[2] * numOfHoles(target, board))
-			print(f"Position#: {p}")
-			
-			display(game.getBoard(), clear=False)
-			print(choosePosition(board, positions, self.weights))
-			for i in range(3000000): #slow down the game
-				pass
 
 def create_initial_population(count):
 	#creates a population of players with random genomes
@@ -104,67 +89,74 @@ def create_initial_population(count):
 
 def breed(p1, p2):
 	p3 = Player()
-	p3.weights[0] = random.choice([p1.weights[0], p2.weights[0]])
-	p3.weights[1] = random.choice([p1.weights[1], p2.weights[1]])
-	p3.weights[2] = random.choice([p1.weights[2], p2.weights[2]])
+	for w in range(len(p3.weights)):
+		p3.weights[w] = random.choice([p1.weights[w], p2.weights[w]])
 	return p3
 
 def mutate(p):
-	p.weights[0] = p.weights[0] + random.uniform(-1, 1)
-	p.weights[1] = p.weights[1] + random.uniform(-1, 1)
-	p.weights[2] = p.weights[2] + random.uniform(-1, 1)
+	for w in range(len(p.weights)):
+		p.weights[w] = p.weights[w] + random.uniform(-1, 1)
 	return p
 
 def evolve(pop, pop_scores):
 	#take top half of them and some random ones from the weak half
 	genSize = len(pop)
+	for i in range(genSize):
+		pop_scores[i] += random.random() # add random fuzz
 	median = np.median(pop_scores)
-
+	
 	newGen = []
 	for i in range(genSize):
-		if(pop_scores[i] >= median):
+		if (pop_scores[i] > median):
 			newGen.append(pop[i])
-		elif(CHANCEOFSURVIVAL > random.random()):
+			print(pop[i].name(), pop_scores[i], "SURVIVED")
+		elif (CHANCEOFSURVIVAL > random.random()):
 			newGen.append(pop[i])
+			print(pop[i].name(), pop_scores[i], "SQUEAKED BY")
+		else:
+			print(pop[i].name(), pop_scores[i], "DIED")
 
-	#randomly mutate some of them
+	print("Median score:", round(median, 2))
+
 	newGenSize = len(newGen)
+	
+	#randomly mutate some of them
 	for i in range(newGenSize):
-		if(CHANCEOFMUTATE > random.random()):
+		if (CHANCEOFMUTATE > random.random()):
 			newGen[i] = mutate(newGen[i])
 
 	emptyPop = genSize - newGenSize
-
+	
 	for i in range(emptyPop):
 		j = random.randint(0, newGenSize - 1)
 		k = j
-		while(j == k):
+		while (j == k):
 			k = random.randint(0, newGenSize - 1)
 		p1 = newGen[j]
 		p2 = newGen[k]
 
 		newGen.append(breed(p1, p2))
-
+	
 	return newGen
 
-def train(pop):
+def train(population, seed):
 	#each player plays the game until death
 	#if any player plays well enough (>= DESIREDSCORE), then return tuple (score, player)
 	#otherwise, evolve them and return highest score and new generation (highest score, new gen)
 	scores = []
 	highestScore = 0
-	seed = random.randint(1, 1000000) #int(round(time.time() * 1000))
-	print(f"Pop: {[player.name() for player in pop]}")
-	
-	for player in pop:
-		game = Tetris(numColumns=10, numRows=10, seed=seed) # Use the same seed for each player, for fairness
+
+	for player in population:
+		random.seed(seed)
+		game = Tetris(numColumns=10, numRows=10) # Use the same seed for each player, for fairness
 		while(not game.lost):
 			player.ai(game) #play round of game
+		random.seed() # reset random seed
+
 		print(f"{player.name()} played game with score {game.numLines}.", player.weights)
-		scores.append(game.numLines)
-	
-	newGen = evolve(pop, scores)
-	return (max(scores), newGen)
+		scores.append(game.numLines) # adds random element to make a continuum of values
+
+	return scores
 
 def save(player):
 	f = open("ml/model",'w+')
@@ -174,24 +166,22 @@ def save(player):
 
 def main():
 	pop = create_initial_population(INITIALPOP)
+	print("\nInitial Population:")
 	for player in pop:
 		print(player.name())
-	popnum = 0
+	popnum = 1
 	while(True):
+		seed = random.randint(1, 10**10)
+		print(f"\nPopulation {popnum}:")
+		scores = train(pop, seed)
+		print("\n")
+		pop = evolve(pop, scores)
 		popnum += 1
-		data = train(pop)
-		print(f"pop num: {popnum}")
-		print(f"best score so far: {data[0]}")
-		if(data[0] >= DESIREDSCORE):
-			final_player = data[1]
-			print("success")
-			break
-		else:
-			pop = data[1]
-
+	
 	save(final_player)
 
 if __name__ == "__main__":
-	random.seed(3)
 	main()
+
+	
 
