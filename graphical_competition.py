@@ -3,7 +3,6 @@
 from tetris.tetris import Tetris, Tile
 import pygame, sys, random, time
 
-from drawing.utils import *
 from drawing.color import *
 from drawing.drawing import *
 
@@ -164,6 +163,10 @@ def render(game, aiGame):
     drawing.drawStatus(score=game.numTurns, level=game.numLines, piece=game.next, font=BASICFONT, location=(WINDOWWIDTH/2 - 150, 50))
     drawing.drawStatus(score=aiGame.numTurns, level=aiGame.numLines, piece=aiGame.next, font=BASICFONT, location=(WINDOWWIDTH - 150, 50))
     pygame.display.update()
+
+def terminate():
+    pygame.quit()
+    sys.exit()
 
 if __name__ == "__main__":
     print("Use --silent for mute")

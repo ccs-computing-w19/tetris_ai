@@ -3,7 +3,6 @@
 from tetris.tetris import Tetris, Tile
 import pygame, sys, random, time
 
-from drawing.utils import *
 from drawing.color import *
 from drawing.drawing import *
 
@@ -172,6 +171,11 @@ def render(game):
     pygame.draw.rect(DISPLAYSURF, drawing.BUTTONCOLOR, AI_BUTTON)  # draw button
     drawing.drawText(text="AI", font=BASICFONT, location=(AI_BUTTON.x + AI_BUTTON.width / 2, AI_BUTTON.y + AI_BUTTON.height / 2), center=True)
     pygame.display.update()
+
+
+def terminate():
+    pygame.quit()
+    sys.exit()
 
 
 if __name__ == "__main__":
