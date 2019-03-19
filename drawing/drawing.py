@@ -1,4 +1,3 @@
-from drawing.utils import terminate
 from drawing.color import *
 from enum import Enum
 from tetris.tetris import Tile

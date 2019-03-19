@@ -3,7 +3,6 @@
 from tetris.tetris import Tetris, Tile
 import pygame, sys, random, time
 
-from drawing.utils import *
 from drawing.color import *
 from drawing.drawing import *
 
@@ -34,7 +33,6 @@ def main():
         response = playGame()
         playMenu(drawing, response)
 
-
 from ai.ai import AI
 from ai.algorithms.mlAi import choosePosition as func1
 from ai.algorithms.holyNeighborAi import choosePosition as func2
@@ -46,8 +44,6 @@ def playGame():
     ai2 = AI(func2)
 
     render(game, game2)
-
-    # loop count variables:
 
     pressedKeys = [-1, -1, -1, -1] # up, down, left, right
     while not game.lost and not game2.lost: # game loop ends when game is lost
@@ -77,7 +73,6 @@ def playMenu(drawing, text):
         pygame.display.update()
         FPSCLOCK.tick()
 
-
 def render(game, aiGame):
     drawing.fill()
     drawing.drawText(text="AI #1 (Bill):", font=BASICFONT, location=(50, 10), center=False)
@@ -89,6 +84,10 @@ def render(game, aiGame):
     drawing.drawStatus(score=game.numTurns, level=game.numLines, piece=game.next, font=BASICFONT, location=(WINDOWWIDTH/2 - 150, 50))
     drawing.drawStatus(score=aiGame.numTurns, level=aiGame.numLines, piece=aiGame.next, font=BASICFONT, location=(WINDOWWIDTH - 150, 50))
     pygame.display.update()
+
+def terminate():
+    pygame.quit()
+    sys.exit()
 
 if __name__ == "__main__":
     print("Use --silent for mute")
