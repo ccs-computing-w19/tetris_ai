@@ -23,18 +23,12 @@ from ml.utils.heuristics import *
 #holes
 #represented as [height, neighbors, holes]
 
-#need to implement:
-#get score from end of a game
-#make the ai play the game
-
 CHANCEOFSURVIVAL = 0.1
 CHANCEOFMUTATE = 0.2
 INITIALPOP = 10
 DESIREDSCORE = 1000
 NUMWEIGHTS = 4
 VERBOSE = False
-
-
 
 class Player:
 	def __init__(self, weights=None):
@@ -217,7 +211,3 @@ if __name__ == "__main__":
 		print("Usage: python3 train_ml.py [-v] [count]")
 		exit(0)
 	main(popCount=count)
-	
-
-	
-
